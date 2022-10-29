@@ -1,21 +1,23 @@
 package main
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
+	"net/http"
 	"os"
 )
 
 func main() {
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-	//	writer.Write([]byte("it works!"))
-	//})
-	//
-	//port := os.Getenv("PORT")
-	//fmt.Println("listening on port " + port)
-	//
-	//http.ListenAndServe(":"+port, mux)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("it works!"))
+	})
+
+	port := os.Getenv("PORT")
+	fmt.Println("listening on port " + port)
+
+	go http.ListenAndServe(":"+port, mux)
 
 	telegramToken := os.Getenv("TELEGRAM_TOKEN")
 	bot, err := tgbotapi.NewBotAPI(telegramToken)
