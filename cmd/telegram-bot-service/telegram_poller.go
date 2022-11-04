@@ -28,20 +28,23 @@ func startTelegramPoller() {
 		if update.Message != nil { // If we got a message
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			cmd, args := handlers.GetCmdAndArgsFromMessage(update.Message.Text)
-			if cmd == nil {
-				sendReplyMsg(bot, update, "invalid command")
-			}
+			go func(incomingMsg tgbotapi.Update) {
+				cmd, args := handlers.GetCmdAndArgsFromMessage(incomingMsg.Message.Text)
+				if cmd == nil {
+					sendReplyMsg(bot, incomingMsg, "invalid command")
+				}
 
-			reply, err := cmd.HandleCmd(context.Background(), handlers.CmdPayload{
-				Args:     args,
-				UserName: update.Message.From.UserName,
-			})
-			if err != nil {
-				sendReplyMsg(bot, update, "something went wrong"+err.Error())
-			}
+				reply, err := cmd.HandleCmd(context.Background(), handlers.CmdPayload{
+					Args:     args,
+					UserName: incomingMsg.Message.From.UserName,
+				})
+				if err != nil {
+					// handle error
+					sendReplyMsg(bot, incomingMsg, "something went wrong"+err.Error())
+				}
 
-			sendReplyMsg(bot, update, reply)
+				sendReplyMsg(bot, incomingMsg, reply)
+			}(update)
 		}
 	}
 }
