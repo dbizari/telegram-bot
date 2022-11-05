@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"strings"
+	"tdl/internal/repository"
 )
 
 type CmdHandler interface {
@@ -15,13 +16,13 @@ type CmdPayload struct {
 }
 
 func GetCmdAndArgsFromMessage(message string) (CmdHandler, []string) {
-	splittedMessage := strings.Split(message, "")
+	splittedMessage := strings.Split(message, " ")
 
 	// Match command
 	var cmd CmdHandler
 	switch splittedMessage[0] {
 	case CMD_CREATE_GAME:
-		cmd = &CreateGameSessionHandler{}
+		cmd = &CreateGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
 	default:
 		// unrecognizable command
 		return nil, nil

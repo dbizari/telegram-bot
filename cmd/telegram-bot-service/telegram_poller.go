@@ -32,6 +32,7 @@ func startTelegramPoller() {
 				cmd, args := handlers.GetCmdAndArgsFromMessage(incomingMsg.Message.Text)
 				if cmd == nil {
 					sendReplyMsg(bot, incomingMsg, "invalid command")
+					return
 				}
 
 				reply, err := cmd.HandleCmd(context.Background(), handlers.CmdPayload{
@@ -41,6 +42,7 @@ func startTelegramPoller() {
 				if err != nil {
 					// handle error
 					sendReplyMsg(bot, incomingMsg, "something went wrong"+err.Error())
+					return
 				}
 
 				sendReplyMsg(bot, incomingMsg, reply)
