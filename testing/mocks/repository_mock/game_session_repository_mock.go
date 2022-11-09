@@ -49,3 +49,18 @@ func (mr *MockGameSessionRepositoryAPIMockRecorder) CreateGame(ctx, gameSession 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).CreateGame), ctx, gameSession)
 }
+
+// TODO: correjir los mocks estos que son un copy paste.
+func (m *MockGameSessionRepositoryAPI) AddPlayer(ctx context.Context, sessionId string ,userInfo *domain.UserInfo) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "addPLayer", ctx, sessionId,userInfo)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+
+func (mr *MockGameSessionRepositoryAPIMockRecorder) AddPlayer(ctx, gameSession interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).CreateGame), ctx, gameSession)
+}

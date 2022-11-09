@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,6 +20,7 @@ var (
 
 type GameSessionRepositoryAPI interface {
 	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
+	AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error)
 }
 
 type gameSessionRepository struct {
@@ -61,4 +63,33 @@ func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *do
 
 	id, _ := res.InsertedID.(primitive.ObjectID)
 	return id.Hex(), nil
+}
+
+func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string, newUser *domain.UserInfo) (string, error) {
+
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	//todo: buscar por ID
+	filter := bson.D{{"_id", sessionId}}
+	var session domain.GameSession
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		return "", err
+	}
+
+	for _, user := range session.Users {
+		if user.UserId == newUser.UserId {
+			return "", errors.New("¡You are already in this game!")
+		}
+	}
+
+	update := bson.D{{"users", append(session.Users, *newUser)}}
+	_, err = collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return "", err
+	}
+
+	return session.ID.Hex(), nil
 }
