@@ -25,6 +25,8 @@ func GetCmdAndArgsFromMessage(message string) (CmdHandler, []string) {
 		cmd = &CreateGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
 	case CMD_JOIN_GAME:
 		cmd = &JoinGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
+	case CMD_EXIT_GAME:
+		cmd = &ExitGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
 	default:
 		// unrecognizable command
 		return nil, nil

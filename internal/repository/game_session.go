@@ -21,6 +21,7 @@ var (
 type GameSessionRepositoryAPI interface {
 	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
 	AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error)
+	ExitGame(ctx context.Context, userName string) (bool, error)
 }
 
 type gameSessionRepository struct {
@@ -71,12 +72,16 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	//todo: buscar por ID
-	filter := bson.D{{"_id", sessionId}}
+	id, err := primitive.ObjectIDFromHex(sessionId)
+	filter := bson.D{{"_id", id}}
 	var session domain.GameSession
-	err := collection.FindOne(ctx, filter).Decode(&session)
+	err = collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
 		return "", err
+	}
+
+	if session.ID.IsZero() {
+		return "", errors.New("sesion not found")
 	}
 
 	for _, user := range session.Users {
@@ -85,11 +90,42 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 		}
 	}
 
-	update := bson.D{{"users", append(session.Users, *newUser)}}
+	update := bson.D{{"$set", bson.D{{"users", append(session.Users, *newUser)}}}}
 	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return "", err
 	}
 
 	return session.ID.Hex(), nil
+}
+
+func (gsr gameSessionRepository) ExitGame(ctx context.Context, userName string) (bool, error) {
+
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
+		"user_id",
+		"tfanciotti"}}}}}}
+	var session domain.GameSession
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		return false, nil
+	}
+
+	update := bson.D{{
+		"$pull",
+		bson.D{{
+			"users",
+			bson.D{{
+				"user_id",
+				userName}}}}}}
+
+	err = collection.FindOneAndUpdate(ctx, filter, update).Decode(&session)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
