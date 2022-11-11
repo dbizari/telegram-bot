@@ -72,24 +72,29 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	id, err := primitive.ObjectIDFromHex(sessionId)
-	filter := bson.D{{"_id", id}}
+	// Check if already player is in a game
 	var session domain.GameSession
+	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
+		"user_id",
+		"tfanciotti"}}}}}}
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err == nil {
+		return "", errors.New("¡You are already in a game!")
+	}
+
+	// Find game
+	id, err := primitive.ObjectIDFromHex(sessionId)
+	filter = bson.D{{"_id", id}}
 	err = collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
 		return "", err
 	}
 
 	if session.ID.IsZero() {
-		return "", errors.New("sesion not found")
+		return "", errors.New("Game not found")
 	}
 
-	for _, user := range session.Users {
-		if user.UserId == newUser.UserId {
-			return "", errors.New("¡You are already in this game!")
-		}
-	}
-
+	// add player to the game
 	update := bson.D{{"$set", bson.D{{"users", append(session.Users, *newUser)}}}}
 	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
