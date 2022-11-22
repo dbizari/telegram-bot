@@ -1,4 +1,4 @@
-package handlers
+package create_game
 
 import (
 	"context"
@@ -8,13 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"tdl/internal/domain"
+	"tdl/internal/handlers/cmd"
 	mock_repository "tdl/testing/mocks/repository_mock"
 	"testing"
 )
 
 func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 	type args struct {
-		payload CmdPayload
+		payload cmd.CmdPayload
 	}
 	tests := []struct {
 		name             string
@@ -27,7 +28,7 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 		{
 			name: "Happy path",
 			args: args{
-				payload: CmdPayload{
+				payload: cmd.CmdPayload{
 					Args:     []string{"randomArg"},
 					UserName: "danybiz",
 				},
@@ -71,7 +72,7 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 		{
 			name: "userName is missing on gameSession",
 			args: args{
-				payload: CmdPayload{
+				payload: cmd.CmdPayload{
 					Args:     []string{"randomArg"},
 					UserName: "",
 				},
@@ -85,7 +86,7 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 		{
 			name: "repository fails to create the game",
 			args: args{
-				payload: CmdPayload{
+				payload: cmd.CmdPayload{
 					Args:     []string{"randomArg"},
 					UserName: "danybiz",
 				},

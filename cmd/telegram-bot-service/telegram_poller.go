@@ -4,7 +4,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
 	"os"
-	"tdl/internal/handlers"
+	"tdl/internal/handlers/cmd/getter"
+	"tdl/internal/handlers/telegram"
 )
 
 func startTelegramPoller() {
@@ -21,7 +22,10 @@ func startTelegramPoller() {
 	u.Timeout = 60
 	updates := bot.GetUpdatesChan(u)
 
-	telegramHandler := handlers.TelegramHandler{BotAPI: bot}
+	telegramHandler := telegram.TelegramHandler{
+		BotAPI:    bot,
+		CmdGetter: getter.CmdGetterImpl{},
+	}
 
 	log.Println("Poller successfuly initiated...")
 
