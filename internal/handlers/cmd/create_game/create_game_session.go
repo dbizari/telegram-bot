@@ -1,9 +1,10 @@
-package handlers
+package create_game
 
 import (
 	"context"
 	"fmt"
 	"tdl/internal/domain"
+	"tdl/internal/handlers/cmd"
 	"tdl/internal/repository"
 )
 
@@ -16,7 +17,7 @@ type CreateGameSessionHandler struct {
 	Repository repository.GameSessionRepositoryAPI
 }
 
-func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload CmdPayload) (string, error) {
+func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
 	if payload.UserName == "" {
 		return "", fmt.Errorf("error on create game session handler, username should not be empty")
 	}

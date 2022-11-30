@@ -1,8 +1,9 @@
-package handlers
+package exit_game
 
 import (
 	"context"
 	"fmt"
+	"tdl/internal/handlers/cmd"
 	"tdl/internal/repository"
 )
 
@@ -15,7 +16,7 @@ type ExitGameSessionHandler struct {
 	Repository repository.GameSessionRepositoryAPI
 }
 
-func (cgsh ExitGameSessionHandler) HandleCmd(ctx context.Context, payload CmdPayload) (string, error) {
+func (cgsh ExitGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
 	if payload.UserName == "" {
 		return "", fmt.Errorf("error on create game session handler, username should not be empty")
 	}

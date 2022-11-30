@@ -1,9 +1,10 @@
-package handlers
+package join_game
 
 import (
 	"context"
 	"fmt"
 	"tdl/internal/domain"
+	"tdl/internal/handlers/cmd"
 	"tdl/internal/repository"
 )
 
@@ -16,7 +17,7 @@ type JoinGameSessionHandler struct {
 	Repository repository.GameSessionRepositoryAPI
 }
 
-func (cgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload CmdPayload) (string, error) {
+func (cgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
 	if payload.UserName == "" {
 		return "", fmt.Errorf("error on join game session handler, username should not be empty")
 	}
