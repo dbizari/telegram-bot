@@ -79,3 +79,18 @@ func (mr *MockGameSessionRepositoryAPIMockRecorder) ExitGame(ctx, userName inter
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExitGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).ExitGame), ctx, userName)
 }
+
+// FindGame mocks base method.
+func (m *MockGameSessionRepositoryAPI) FindGame(ctx context.Context, sessionId string) (domain.GameSession, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindGame", ctx, sessionId)
+	ret0, _ := ret[0].(domain.GameSession)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindGame indicates an expected call of FindGame.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) FindGame(ctx, sessionId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).FindGame), ctx, sessionId)
+}
