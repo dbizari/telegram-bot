@@ -24,14 +24,16 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 
 	gameSession := &domain.GameSession{
 		OwnerId: payload.UserName,
-		Users: []domain.UserInfo{
+		Users: []*domain.UserInfo{
 			{
-				UserId: payload.UserName,
-				Role:   "", // ToDo for the moment this is empty, previous start the game the role should be assigned
-				Alive:  true,
+				UserId:   payload.UserName,
+				Role:     "", // ToDo for the moment this is empty, previous start the game the role should be assigned
+				Alive:    true,
+				Votes:    0,
+				HasVoted: false,
 			},
 		},
-		Status: "pending",
+		Status: domain.STAGE_PENDING,
 	}
 
 	id, err := cgsh.Repository.CreateGame(ctx, gameSession)

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,6 +20,9 @@ var (
 
 type GameSessionRepositoryAPI interface {
 	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
+	Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error)
+	Update(ctx context.Context, gameSession *domain.GameSession) error
+	GetByMember(ctx context.Context, username string) (*domain.GameSession, error)
 }
 
 type gameSessionRepository struct {
@@ -61,4 +65,73 @@ func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *do
 
 	id, _ := res.InsertedID.(primitive.ObjectID)
 	return id.Hex(), nil
+}
+
+func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error) {
+	id, err := primitive.ObjectIDFromHex(gameSessionID)
+	if err != nil {
+		return nil, errors.Wrap(err, "error trying to convert gameSessionID to ObjectID")
+	}
+
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	var session domain.GameSession
+	filter := bson.D{{"_id", id}}
+	err = collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		return nil, errors.Wrap(err, "error trying to get game session from db")
+	}
+
+	return &session, nil
+}
+
+func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	var session domain.GameSession
+	filter := bson.D{
+		{"users", bson.D{
+			{"$elemMatch", bson.D{
+				{"user_id", userID},
+			}},
+		}},
+	}
+
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		return nil, errors.Wrap(err, "error trying to get game session from db")
+	}
+
+	return &session, nil
+}
+
+func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *domain.GameSession) error {
+
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"_id": gameSession.ID}
+	result, err := collection.ReplaceOne(ctx, filter, gameSession)
+	if err != nil {
+		return errors.Wrap(err, "error on update game session from db")
+	}
+
+	if result.ModifiedCount != 1 {
+		return errors.New("error on update game session from db, the document was not updated")
+	}
+
+	return nil
 }
