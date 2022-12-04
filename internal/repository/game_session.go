@@ -76,18 +76,27 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	var session domain.GameSession
 	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
 		"user_id",
-		"tfanciotti"}}}}}}
+		newUser.UserId}}}}}}
 	err := collection.FindOne(ctx, filter).Decode(&session)
 	if err == nil {
-		return "", errors.New("¡You are already in a game!")
+		return "", err
+	}
+
+	for _, user := range session.Users {
+		if user.UserId == newUser.UserId {
+			return "", errors.New("you are already in a game")
+		}
 	}
 
 	// Find game
 	id, err := primitive.ObjectIDFromHex(sessionId)
+	if err != nil {
+		return "", errors.Wrap(err, "error trying to handle sessionId")
+	}
 	filter = bson.D{{"_id", id}}
 	err = collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error trying to get game session from db")
 	}
 
 	if session.ID.IsZero() {
@@ -98,7 +107,7 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	update := bson.D{{"$set", bson.D{{"users", append(session.Users, *newUser)}}}}
 	_, err = collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error trying to update the game on db")
 	}
 
 	return session.ID.Hex(), nil
@@ -112,7 +121,7 @@ func (gsr gameSessionRepository) ExitGame(ctx context.Context, userName string) 
 
 	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
 		"user_id",
-		"tfanciotti"}}}}}}
+		userName}}}}}}
 	var session domain.GameSession
 	err := collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {

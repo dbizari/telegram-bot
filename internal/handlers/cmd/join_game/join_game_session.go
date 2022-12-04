@@ -17,7 +17,7 @@ type JoinGameSessionHandler struct {
 	Repository repository.GameSessionRepositoryAPI
 }
 
-func (cgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
+func (jgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
 	if payload.UserName == "" {
 		return "", fmt.Errorf("error on join game session handler, username should not be empty")
 	}
@@ -29,12 +29,12 @@ func (cgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.Cm
 	}
 
 	if len(payload.Args) == 0 {
-		return "", fmt.Errorf("Error: missing session ID")
+		return "", fmt.Errorf("error: missing session ID")
 	}
 
 	sesionId := payload.Args[0]
 
-	id, err := cgsh.Repository.AddPlayer(ctx, sesionId, newUser)
+	id, err := jgsh.Repository.AddPlayer(ctx, sesionId, newUser)
 	if err != nil {
 		return "", err
 	}
