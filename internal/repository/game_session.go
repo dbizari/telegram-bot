@@ -20,6 +20,7 @@ var (
 
 type GameSessionRepositoryAPI interface {
 	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
+	FindGame(ctx context.Context, sessionId string) (domain.GameSession, error)
 	AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error)
 	ExitGame(ctx context.Context, userName string) (bool, error)
 }
@@ -66,6 +67,32 @@ func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *do
 	return id.Hex(), nil
 }
 
+func (gsr gameSessionRepository) FindGame(ctx context.Context, sessionId string) (domain.GameSession, error) {
+
+	collection := gsr.Database("mafia").Collection("game_session")
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	session := domain.GameSession{}
+
+	// Find game
+	id, err := primitive.ObjectIDFromHex(sessionId)
+	if err != nil {
+		return session, errors.Wrap(err, "error trying to handle sessionId")
+	}
+
+	filter := bson.D{{"_id", id}}
+	err = collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return session, errors.New("Game not found")
+		}
+		return session, errors.Wrap(err, "error trying to get game session from db")
+	}
+
+	return session, nil
+}
+
 func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string, newUser *domain.UserInfo) (string, error) {
 
 	collection := gsr.Database("mafia").Collection("game_session")
@@ -73,13 +100,19 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	defer cancel()
 
 	// Check if already player is in a game
-	var session domain.GameSession
+	session := domain.GameSession{}
 	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
 		"user_id",
 		newUser.UserId}}}}}}
 	err := collection.FindOne(ctx, filter).Decode(&session)
-	if err == nil {
-		return "", err
+	if err != nil {
+		if err != mongo.ErrNoDocuments {
+			return "", errors.Wrap(err, "error trying to find user on db")
+		}
+	}
+
+	if !session.ID.IsZero() {
+		return "", errors.New("You are already in a game!")
 	}
 
 	for _, user := range session.Users {
@@ -89,23 +122,14 @@ func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string
 	}
 
 	// Find game
-	id, err := primitive.ObjectIDFromHex(sessionId)
+	session, err = gsr.FindGame(ctx, sessionId)
 	if err != nil {
-		return "", errors.Wrap(err, "error trying to handle sessionId")
-	}
-	filter = bson.D{{"_id", id}}
-	err = collection.FindOne(ctx, filter).Decode(&session)
-	if err != nil {
-		return "", errors.Wrap(err, "error trying to get game session from db")
-	}
-
-	if session.ID.IsZero() {
-		return "", errors.New("Game not found")
+		return "", err
 	}
 
 	// add player to the game
 	update := bson.D{{"$set", bson.D{{"users", append(session.Users, *newUser)}}}}
-	_, err = collection.UpdateOne(ctx, filter, update)
+	_, err = collection.UpdateOne(ctx, session, update)
 	if err != nil {
 		return "", errors.Wrap(err, "error trying to update the game on db")
 	}
