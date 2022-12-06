@@ -55,6 +55,59 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					Return(nil)
 			},
 		},
+		{
+			name: "Game already started",
+			args: cmd.CmdPayload{
+				UserName: "mili",
+			},
+			want:    REPLY_START_GAME_ALREADY_STARTED,
+			wantErr: false,
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+				session := domain.GameSession{
+					ID:      primitive.ObjectID{},
+					OwnerId: "mili",
+					Users: []*domain.UserInfo{
+						{
+							UserId: "mili",
+						},
+						{
+							UserId: "danybiz",
+						},
+						{
+							UserId: "tfanciotti",
+						},
+					},
+					Status: domain.STAGE_MAFIA,
+				}
+				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
+					Return(&session, nil)
+			},
+		},
+		{
+			name: "Not enough players",
+			args: cmd.CmdPayload{
+				UserName: "mili",
+			},
+			want:    REPLY_START_GAME_NOT_ENOUGH_PLAYERS,
+			wantErr: false,
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+				session := domain.GameSession{
+					ID:      primitive.ObjectID{},
+					OwnerId: "mili",
+					Users: []*domain.UserInfo{
+						{
+							UserId: "mili",
+						},
+						{
+							UserId: "danybiz",
+						},
+					},
+					Status: domain.STAGE_PENDING,
+				}
+				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
+					Return(&session, nil)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -71,7 +124,6 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			got, err := handler.HandleCmd(context.Background(), tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleCmd() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			if got != tt.want {
 				t.Errorf("HandleCmd() got = %v, want %v", got, tt.want)
