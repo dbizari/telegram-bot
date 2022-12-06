@@ -43,7 +43,7 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 						}
 
 						expectedStatus := "pending"
-						if *gameSession.Status != expectedStatus {
+						if gameSession.Status != expectedStatus {
 							return "", fmt.Errorf("expected status: %s , received: %s", expectedStatus, gameSession.Status)
 						}
 

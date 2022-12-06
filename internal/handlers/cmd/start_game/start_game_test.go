@@ -11,9 +11,6 @@ import (
 )
 
 func TestStartGameHandler_HandleCmd(t *testing.T) {
-	initialStage := domain.STAGE_PENDING
-	finalStage := domain.STAGE_MAFIA
-
 	tests := []struct {
 		name             string
 		fnMockRepository func(repository *mock_repository.MockGameSessionRepositoryAPI)
@@ -43,13 +40,13 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 							UserId: "tfanciotti",
 						},
 					},
-					Status: &initialStage,
+					Status: domain.STAGE_PENDING,
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 
 				expectedSession := session
-				expectedSession.Status = &finalStage
+				expectedSession.Status = domain.STAGE_MAFIA
 				expectedSession.Users[0].Role = domain.ROLE_POLICE
 				expectedSession.Users[1].Role = domain.ROLE_MAFIA
 				expectedSession.Users[2].Role = domain.ROLE_CITIZEN

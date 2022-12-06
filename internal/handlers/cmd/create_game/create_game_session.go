@@ -22,7 +22,6 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 		return "", fmt.Errorf("error on create game session handler, username should not be empty")
 	}
 
-	status := domain.STAGE_PENDING
 	gameSession := &domain.GameSession{
 		OwnerId: payload.UserName,
 		Users: []*domain.UserInfo{
@@ -34,7 +33,7 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 				HasVoted: false,
 			},
 		},
-		Status: &status,
+		Status: domain.STAGE_PENDING,
 	}
 
 	id, err := cgsh.Repository.CreateGame(ctx, gameSession)

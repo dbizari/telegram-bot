@@ -122,7 +122,7 @@ func TestGameSession_CanUserVote(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  &tt.fields.Status,
+				Status:  tt.fields.Status,
 			}
 			if got := gs.CanUserVote(tt.args.userID); got != tt.want {
 				t.Errorf("CanUserVote() = %v, want %v", got, tt.want)
@@ -236,7 +236,7 @@ func TestGameSession_ApplyVote(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  &tt.fields.Status,
+				Status:  tt.fields.Status,
 			}
 			if got := gs.ApplyVote(tt.args.votingUserID, tt.args.votedUserID); got != tt.want {
 				t.Errorf("ApplyVote() = %v, want %v", got, tt.want)
@@ -256,62 +256,41 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 		Users   []*UserInfo
 		Status  string
 	}
-	type args struct {
-		userId string
-	}
+
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
 		want   bool
 	}{
 		{
-			name: "Owner starts the game",
+			name: "User starts a game that hasn't begun yet",
 			fields: fields{
 				OwnerId: "mily",
 				Users: []*UserInfo{
 					{
-						UserId:   "mily",
-						Alive:    true,
-						Role:     ROLE_MAFIA,
-						HasVoted: false,
+						UserId: "mily",
 					},
 					{
-						UserId:   "tomi",
-						Alive:    true,
-						Role:     ROLE_CITIZEN,
-						HasVoted: false,
+						UserId: "tomi",
 					},
 				},
-				Status: STAGE_DISCUSSION,
-			},
-			args: args{
-				userId: "mily",
+				Status: STAGE_PENDING,
 			},
 			want: true,
 		},
 		{
-			name: "User that is not the owner can't start the game",
+			name: "User starts a game that's already begun",
 			fields: fields{
 				OwnerId: "tomi",
 				Users: []*UserInfo{
 					{
-						UserId:   "mily",
-						Alive:    true,
-						Role:     ROLE_MAFIA,
-						HasVoted: false,
+						UserId: "mily",
 					},
 					{
-						UserId:   "tomi",
-						Alive:    true,
-						Role:     ROLE_CITIZEN,
-						HasVoted: false,
+						UserId: "tomi",
 					},
 				},
 				Status: STAGE_DISCUSSION,
-			},
-			args: args{
-				userId: "mily",
 			},
 			want: false,
 		},
@@ -322,9 +301,9 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  &tt.fields.Status,
+				Status:  tt.fields.Status,
 			}
-			if got := gs.CanUserStartTheGame(tt.args.userId); got != tt.want {
+			if got := gs.CanUserStartTheGame(); got != tt.want {
 				t.Errorf("CanUserStartTheGame() = %v, want %v", got, tt.want)
 			}
 		})
@@ -444,14 +423,14 @@ func TestGameSession_StartGame(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  &tt.fields.Status,
+				Status:  tt.fields.Status,
 			}
 			got := gs.StartGame()
 			if got != tt.want.output {
 				t.Errorf("StartGame() = %v, want %v", got, tt.want.output)
 			}
-			if *gs.Status != tt.want.status {
-				t.Errorf("Game status = %v, want %v", *gs.Status, tt.want.status)
+			if gs.Status != tt.want.status {
+				t.Errorf("Game status = %v, want %v", gs.Status, tt.want.status)
 			}
 			citizenAmountGot := 0
 			policeAmountGot := 0

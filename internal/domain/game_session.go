@@ -28,7 +28,7 @@ type GameSession struct {
 	ID      primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
 	OwnerId string             `json:"owner_id" bson:"owner_id"`
 	Users   []*UserInfo        `json:"users" bson:"users"`
-	Status  *string            `json:"status" bson:"status"`
+	Status  string             `json:"status" bson:"status"`
 }
 
 type UserInfo struct {
@@ -51,11 +51,11 @@ func (gs GameSession) CanUserVote(userID string) bool {
 		return false
 	}
 
-	if *gs.Status == STAGE_DISCUSSION {
+	if gs.Status == STAGE_DISCUSSION {
 		return !user.HasVoted
 	}
 
-	if *gs.Status == STAGE_MAFIA {
+	if gs.Status == STAGE_MAFIA {
 		return user.Role == ROLE_MAFIA && !user.HasVoted
 	}
 
@@ -77,11 +77,11 @@ func (gs *GameSession) ApplyVote(votingUserID, votedUserID string) bool {
 	return found
 }
 
-func (gs GameSession) CanUserStartTheGame(userId string) bool {
-	return gs.OwnerId == userId
+func (gs GameSession) CanUserStartTheGame() bool {
+	return gs.Status == STAGE_PENDING
 }
 
-func (gs GameSession) StartGame() bool {
+func (gs *GameSession) StartGame() bool {
 	usersAmount := len(gs.Users)
 
 	if usersAmount < RESTRICTION_GAME_MIN_PLAYERS {
@@ -124,7 +124,7 @@ func (gs GameSession) StartGame() bool {
 		user.Role = ROLE_CITIZEN
 	}
 
-	*gs.Status = STAGE_MAFIA
+	gs.Status = STAGE_MAFIA
 
 	return true
 }
