@@ -45,13 +45,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 
-				expectedSession := session
-				expectedSession.Status = domain.STAGE_MAFIA
-				expectedSession.Users[0].Role = domain.ROLE_POLICE
-				expectedSession.Users[1].Role = domain.ROLE_MAFIA
-				expectedSession.Users[2].Role = domain.ROLE_CITIZEN
-
-				repository.EXPECT().Update(gomock.Any(), gomock.Eq(&expectedSession)).Times(1).
+				repository.EXPECT().Update(gomock.Any(), gomock.Any()).Times(1).
 					Return(nil)
 			},
 		},
