@@ -162,7 +162,11 @@ func (gsr gameSessionRepository) ExitGame(ctx context.Context, userName string) 
 
 	err = collection.FindOneAndUpdate(ctx, filter, update).Decode(&session)
 	if err != nil {
-		return false, err
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+
+		return false, errors.Wrap(err, "error trying to get game session from db")
 	}
 
 	return true, nil
