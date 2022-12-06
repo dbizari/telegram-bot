@@ -4,6 +4,7 @@ import (
 	"strings"
 	"tdl/internal/handlers/cmd"
 	"tdl/internal/handlers/cmd/create_game"
+	"tdl/internal/handlers/cmd/start_game"
 	"tdl/internal/handlers/cmd/vote"
 	"tdl/internal/repository"
 )
@@ -23,6 +24,8 @@ func (cgi CmdGetterImpl) GetCmdAndArgsFromMessage(message string) (cmd.CmdHandle
 	switch splittedMessage[0] {
 	case create_game.CMD_CREATE_GAME:
 		command = &create_game.CreateGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
+	case start_game.CMD_START_GAME:
+		command = &start_game.StartGameHandler{GameSessionRepository: repository.GetGameSessionRepositoryClient()}
 	case vote.CMD_VOTE:
 		command = &vote.VoteHandler{GameSessionRepository: repository.GetGameSessionRepositoryClient()}
 	default:
