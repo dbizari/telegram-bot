@@ -20,9 +20,15 @@ var (
 
 type GameSessionRepositoryAPI interface {
 	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
+<<<<<<< HEAD
 	Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error)
 	Update(ctx context.Context, gameSession *domain.GameSession) error
 	GetByMember(ctx context.Context, username string) (*domain.GameSession, error)
+=======
+	FindGame(ctx context.Context, sessionId string) (domain.GameSession, error)
+	AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error)
+	ExitGame(ctx context.Context, userName string) (bool, error)
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 }
 
 type gameSessionRepository struct {
@@ -67,21 +73,37 @@ func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *do
 	return id.Hex(), nil
 }
 
+<<<<<<< HEAD
 func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error) {
 	id, err := primitive.ObjectIDFromHex(gameSessionID)
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to convert gameSessionID to ObjectID")
 	}
+=======
+func (gsr gameSessionRepository) FindGame(ctx context.Context, sessionId string) (domain.GameSession, error) {
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+<<<<<<< HEAD
 	var session domain.GameSession
+=======
+	session := domain.GameSession{}
+
+	// Find game
+	id, err := primitive.ObjectIDFromHex(sessionId)
+	if err != nil {
+		return session, errors.Wrap(err, "error trying to handle sessionId")
+	}
+
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 	filter := bson.D{{"_id", id}}
 	err = collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+<<<<<<< HEAD
 			return nil, nil
 		}
 
@@ -92,10 +114,23 @@ func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) 
 }
 
 func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+=======
+			return session, errors.New("Game not found")
+		}
+		return session, errors.Wrap(err, "error trying to get game session from db")
+	}
+
+	return session, nil
+}
+
+func (gsr gameSessionRepository) AddPlayer(ctx context.Context, sessionId string, newUser *domain.UserInfo) (string, error) {
+
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+<<<<<<< HEAD
 	var session domain.GameSession
 	filter := bson.D{
 		{"users", bson.D{
@@ -118,11 +153,53 @@ func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string)
 }
 
 func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *domain.GameSession) error {
+=======
+	// Check if already player is in a game
+	session := domain.GameSession{}
+	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
+		"user_id",
+		newUser.UserId}}}}}}
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		if err != mongo.ErrNoDocuments {
+			return "", errors.Wrap(err, "error trying to find user on db")
+		}
+	}
+
+	if !session.ID.IsZero() {
+		return "", errors.New("You are already in a game!")
+	}
+
+	for _, user := range session.Users {
+		if user.UserId == newUser.UserId {
+			return "", errors.New("you are already in a game")
+		}
+	}
+
+	// Find game
+	session, err = gsr.FindGame(ctx, sessionId)
+	if err != nil {
+		return "", err
+	}
+
+	// add player to the game
+	update := bson.D{{"$set", bson.D{{"users", append(session.Users, *newUser)}}}}
+	_, err = collection.UpdateOne(ctx, session, update)
+	if err != nil {
+		return "", errors.Wrap(err, "error trying to update the game on db")
+	}
+
+	return session.ID.Hex(), nil
+}
+
+func (gsr gameSessionRepository) ExitGame(ctx context.Context, userName string) (bool, error) {
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
+<<<<<<< HEAD
 	filter := bson.M{"_id": gameSession.ID}
 	result, err := collection.ReplaceOne(ctx, filter, gameSession)
 	if err != nil {
@@ -134,4 +211,33 @@ func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *domain
 	}
 
 	return nil
+=======
+	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
+		"user_id",
+		userName}}}}}}
+	var session domain.GameSession
+	err := collection.FindOne(ctx, filter).Decode(&session)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+
+		return false, errors.Wrap(err, "error trying to get game session from db")
+	}
+
+	update := bson.D{{
+		"$pull",
+		bson.D{{
+			"users",
+			bson.D{{
+				"user_id",
+				userName}}}}}}
+
+	err = collection.FindOneAndUpdate(ctx, filter, update).Decode(&session)
+	if err != nil {
+		return false, errors.Wrap(err, "error trying to update game session on db")
+	}
+
+	return true, nil
+>>>>>>> 40184144a412e657023dea75a2a381142c46df08
 }
