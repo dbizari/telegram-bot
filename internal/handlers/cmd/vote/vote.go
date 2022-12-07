@@ -11,7 +11,6 @@ const (
 	CMD_VOTE                      = "/vote"
 	REPLY_VOTE                    = "voted username: %s"
 	REPLY_VOTE_MISSING_USERNAME   = "missing username to vote"
-	REPLY_VOTE_EMPTY_USERNAME     = "empty username to vote"
 	REPLY_VOTE_INEXISTENT_SESSION = "oops it seems to be that you are not in a game"
 	REPLY_VOTE_USER_CANT_VOTE     = "sorry you cannot vote :("
 	REPLY_VOTE_USER_NOT_FOUND     = "%s not found in the game"
