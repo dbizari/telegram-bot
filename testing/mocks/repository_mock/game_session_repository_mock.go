@@ -35,21 +35,6 @@ func (m *MockGameSessionRepositoryAPI) EXPECT() *MockGameSessionRepositoryAPIMoc
 	return m.recorder
 }
 
-// AddPlayer mocks base method.
-func (m *MockGameSessionRepositoryAPI) AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPlayer", ctx, sessionId, userInfo)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddPlayer indicates an expected call of AddPlayer.
-func (mr *MockGameSessionRepositoryAPIMockRecorder) AddPlayer(ctx, sessionId, userInfo interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPlayer", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).AddPlayer), ctx, sessionId, userInfo)
-}
-
 // CreateGame mocks base method.
 func (m *MockGameSessionRepositoryAPI) CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error) {
 	m.ctrl.T.Helper()
@@ -80,17 +65,61 @@ func (mr *MockGameSessionRepositoryAPIMockRecorder) ExitGame(ctx, userName inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExitGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).ExitGame), ctx, userName)
 }
 
-// FindGame mocks base method.
-func (m *MockGameSessionRepositoryAPI) FindGame(ctx context.Context, sessionId string) (domain.GameSession, error) {
+// Get mocks base method.
+func (m *MockGameSessionRepositoryAPI) Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindGame", ctx, sessionId)
-	ret0, _ := ret[0].(domain.GameSession)
+	ret := m.ctrl.Call(m, "Get", ctx, gameSessionID)
+	ret0, _ := ret[0].(*domain.GameSession)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindGame indicates an expected call of FindGame.
-func (mr *MockGameSessionRepositoryAPIMockRecorder) FindGame(ctx, sessionId interface{}) *gomock.Call {
+// Get indicates an expected call of Get.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) Get(ctx, gameSessionID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindGame", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).FindGame), ctx, sessionId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).Get), ctx, gameSessionID)
+}
+
+// GetByMember mocks base method.
+func (m *MockGameSessionRepositoryAPI) GetByMember(ctx context.Context, username string) (*domain.GameSession, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByMember", ctx, username)
+	ret0, _ := ret[0].(*domain.GameSession)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByMember indicates an expected call of GetByMember.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) GetByMember(ctx, username interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByMember", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).GetByMember), ctx, username)
+}
+
+// GetNotFinishedGameByMember mocks base method.
+func (m *MockGameSessionRepositoryAPI) GetNotFinishedGameByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotFinishedGameByMember", ctx, userID)
+	ret0, _ := ret[0].(*domain.GameSession)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotFinishedGameByMember indicates an expected call of GetNotFinishedGameByMember.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) GetNotFinishedGameByMember(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotFinishedGameByMember", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).GetNotFinishedGameByMember), ctx, userID)
+}
+
+// Update mocks base method.
+func (m *MockGameSessionRepositoryAPI) Update(ctx context.Context, gameSession *domain.GameSession) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, gameSession)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) Update(ctx, gameSession interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).Update), ctx, gameSession)
 }

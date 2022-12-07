@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	CMD_JOIN_GAME   = "/joinGame"
-	REPLY_JOIN_GAME = "Joined to game: %s!"
+	CMD_JOIN_GAME                    = "/joinGame"
+	REPLY_JOIN_GAME                  = "Joined to game: %s!"
+	REPLY_JOIN_ALREADY_ON_OTHER_GAME = "You are already on other game"
+	REPLY_JOIN_INEXISTENT_SESSION    = "The game you are trying to join does not exist"
 )
 
 type JoinGameSessionHandler struct {
@@ -21,23 +23,41 @@ func (jgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.Cm
 	if payload.UserName == "" {
 		return "", fmt.Errorf("error on join game session handler, username should not be empty")
 	}
-
-	newUser := &domain.UserInfo{
-		UserId: payload.UserName,
-		Role:   "", // ToDo for the moment this is empty, previous start the game the role should be assigned
-		Alive:  true,
-	}
-
 	if len(payload.Args) == 0 {
 		return "", fmt.Errorf("error: missing session ID")
 	}
+	sessionId := payload.Args[0]
 
-	sesionId := payload.Args[0]
+	gameSession, err := jgsh.Repository.GetNotFinishedGameByMember(ctx, payload.UserName)
+	if err != nil {
+		return "", err
+	}
+	if gameSession != nil && !gameSession.ID.IsZero() {
+		return REPLY_JOIN_ALREADY_ON_OTHER_GAME, nil
+	}
 
-	id, err := jgsh.Repository.AddPlayer(ctx, sesionId, newUser)
+	gameSession, err = jgsh.Repository.Get(ctx, sessionId)
+	if err != nil {
+		return "", err
+	}
+	if gameSession == nil {
+		return REPLY_JOIN_INEXISTENT_SESSION, nil
+	}
+
+	newUser := &domain.UserInfo{
+		UserId:   payload.UserName,
+		Role:     "",
+		Alive:    true,
+		Votes:    0,
+		HasVoted: false,
+	}
+
+	gameSession.Users = append(gameSession.Users, newUser)
+
+	err = jgsh.Repository.Update(ctx, gameSession)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf(REPLY_JOIN_GAME, id), nil
+	return fmt.Sprintf(REPLY_JOIN_GAME, gameSession.ID.Hex()), nil
 }

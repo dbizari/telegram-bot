@@ -15,3 +15,4 @@ mockgen:
 	mockgen -source=./internal/handlers/cmd/cmd.go -destination=./testing/mocks/handlers_mock/cmd/cmd_mock.go
 	mockgen -source=./internal/handlers/cmd/getter/cmd_getter.go -destination=./testing/mocks/handlers_mock/cmdgetter/cmd_getter_mock.go
 	mockgen -source=./internal/handlers/telegram/telegram.go -destination=./testing/mocks/handlers_mock/telegram/telegram_bot_mock.go
+	mockgen -source=./internal/repository/game_session.go -destination=./testing/mocks/repository_mock/game_session_repository_mock.go

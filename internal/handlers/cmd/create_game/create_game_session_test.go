@@ -52,10 +52,12 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 							return "", fmt.Errorf("expected username: %s , received: %s", expectedUsername, gameSession.OwnerId)
 						}
 
-						expectedUsers := []domain.UserInfo{{
-							UserId: "danybiz",
-							Role:   "",
-							Alive:  true,
+						expectedUsers := []*domain.UserInfo{{
+							UserId:   "danybiz",
+							Role:     "",
+							Alive:    true,
+							Votes:    0,
+							HasVoted: false,
 						}}
 						if len(gameSession.Users) != 1 {
 							return "", fmt.Errorf("expected len(gameSession.Users): %v, received: %v", len(expectedUsers), len(gameSession.Users))
