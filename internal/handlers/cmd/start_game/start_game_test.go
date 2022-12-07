@@ -50,6 +50,34 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			},
 		},
 		{
+			name: "User is not the owner",
+			args: cmd.CmdPayload{
+				UserName: "danybiz",
+			},
+			want:    REPLY_START_GAME_USER_IS_NOT_OWNER,
+			wantErr: false,
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+				session := domain.GameSession{
+					ID:      primitive.ObjectID{},
+					OwnerId: "mili",
+					Users: []*domain.UserInfo{
+						{
+							UserId: "mili",
+						},
+						{
+							UserId: "danybiz",
+						},
+						{
+							UserId: "tfanciotti",
+						},
+					},
+					Status: domain.STAGE_MAFIA,
+				}
+				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
+					Return(&session, nil)
+			},
+		},
+		{
 			name: "Game already started",
 			args: cmd.CmdPayload{
 				UserName: "mili",

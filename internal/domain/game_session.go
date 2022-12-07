@@ -128,3 +128,7 @@ func (gs *GameSession) StartGame() bool {
 
 	return true
 }
+
+func (gs GameSession) IsUserTheOwner(userId string) bool {
+	return gs.OwnerId == userId
+}

@@ -11,6 +11,7 @@ const (
 
 	REPLY_START_GAME                    = "Let the game begin!"
 	REPLY_START_GAME_INEXISTENT_SESSION = "Oops it seems that you are not in any game"
+	REPLY_START_GAME_USER_IS_NOT_OWNER  = "Only the owner can start the game"
 	REPLY_START_GAME_ALREADY_STARTED    = "The game is already on"
 	REPLY_START_GAME_NOT_ENOUGH_PLAYERS = "More players are needed to start the game!"
 )
@@ -27,6 +28,10 @@ func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayloa
 
 	if session == nil {
 		return REPLY_START_GAME_INEXISTENT_SESSION, nil
+	}
+
+	if !session.IsUserTheOwner(payload.UserName) {
+		return REPLY_START_GAME_USER_IS_NOT_OWNER, nil
 	}
 
 	if !session.CanUserStartTheGame() {
