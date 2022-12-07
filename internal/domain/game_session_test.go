@@ -248,3 +248,169 @@ func TestGameSession_ApplyVote(t *testing.T) {
 		})
 	}
 }
+
+func TestGameSession_GetRole(t *testing.T) {
+	type fields struct {
+		ID      primitive.ObjectID
+		OwnerId string
+		Users   []*UserInfo
+		Status  string
+	}
+	type args struct {
+		userId string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "User gets their role",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+						Role:   ROLE_MAFIA,
+					},
+					{
+						UserId: "tomi",
+						Role:   ROLE_CITIZEN,
+					},
+				},
+			},
+			args: args{userId: "dani"},
+			want: ROLE_MAFIA,
+		},
+		{
+			name: "User doesn't have a role",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+					},
+				},
+			},
+			args: args{userId: "dani"},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameSession{
+				ID:      tt.fields.ID,
+				OwnerId: tt.fields.OwnerId,
+				Users:   tt.fields.Users,
+				Status:  tt.fields.Status,
+			}
+			if got := gs.GetRole(tt.args.userId); got != tt.want {
+				t.Errorf("GetRole() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGameSession_CanUserAskForRole(t *testing.T) {
+	type fields struct {
+		ID      primitive.ObjectID
+		OwnerId string
+		Users   []*UserInfo
+		Status  string
+	}
+	type args struct {
+		userId    string
+		userToAsk string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   bool
+	}{
+		{
+			name: "Police asks for role on their turn",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+						Role:   ROLE_POLICE,
+					},
+					{
+						UserId: "mili",
+						Role:   ROLE_MAFIA,
+					},
+				},
+				Status: STAGE_POLICE,
+			},
+			args: args{userId: "dani", userToAsk: "mili"},
+			want: true,
+		},
+		{
+			name: "Police asks for role when it's not their turn",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+						Role:   ROLE_POLICE,
+					},
+					{
+						UserId: "mili",
+						Role:   ROLE_MAFIA,
+					},
+				},
+				Status: STAGE_DISCUSSION,
+			},
+			args: args{userId: "dani", userToAsk: "mili"},
+			want: false,
+		},
+		{
+			name: "User asks for their own role",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+						Role:   ROLE_POLICE,
+					},
+					{
+						UserId: "mili",
+						Role:   ROLE_MAFIA,
+					},
+				},
+				Status: STAGE_DISCUSSION,
+			},
+			args: args{userId: "mili", userToAsk: "mili"},
+			want: true,
+		},
+		{
+			name: "User asks for another user's role",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+						Role:   ROLE_CITIZEN,
+					},
+					{
+						UserId: "mili",
+						Role:   ROLE_MAFIA,
+					},
+				},
+				Status: STAGE_DISCUSSION,
+			},
+			args: args{userId: "dani", userToAsk: "mili"},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameSession{
+				ID:      tt.fields.ID,
+				OwnerId: tt.fields.OwnerId,
+				Users:   tt.fields.Users,
+				Status:  tt.fields.Status,
+			}
+			if got := gs.CanUserAskForRole(tt.args.userId, tt.args.userToAsk); got != tt.want {
+				t.Errorf("CanUserAskForRole() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
