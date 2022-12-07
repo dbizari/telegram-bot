@@ -35,21 +35,6 @@ func (m *MockGameSessionRepositoryAPI) EXPECT() *MockGameSessionRepositoryAPIMoc
 	return m.recorder
 }
 
-// AddPlayer mocks base method.
-func (m *MockGameSessionRepositoryAPI) AddPlayer(ctx context.Context, sessionId string, userInfo *domain.UserInfo) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddPlayer", ctx, sessionId, userInfo)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddPlayer indicates an expected call of AddPlayer.
-func (mr *MockGameSessionRepositoryAPIMockRecorder) AddPlayer(ctx, sessionId, userInfo interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPlayer", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).AddPlayer), ctx, sessionId, userInfo)
-}
-
 // CreateGame mocks base method.
 func (m *MockGameSessionRepositoryAPI) CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error) {
 	m.ctrl.T.Helper()
@@ -108,6 +93,21 @@ func (m *MockGameSessionRepositoryAPI) GetByMember(ctx context.Context, username
 func (mr *MockGameSessionRepositoryAPIMockRecorder) GetByMember(ctx, username interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByMember", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).GetByMember), ctx, username)
+}
+
+// GetNotFinishedGameByMember mocks base method.
+func (m *MockGameSessionRepositoryAPI) GetNotFinishedGameByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotFinishedGameByMember", ctx, userID)
+	ret0, _ := ret[0].(*domain.GameSession)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotFinishedGameByMember indicates an expected call of GetNotFinishedGameByMember.
+func (mr *MockGameSessionRepositoryAPIMockRecorder) GetNotFinishedGameByMember(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotFinishedGameByMember", reflect.TypeOf((*MockGameSessionRepositoryAPI)(nil).GetNotFinishedGameByMember), ctx, userID)
 }
 
 // Update mocks base method.
