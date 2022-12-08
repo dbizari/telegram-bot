@@ -74,6 +74,44 @@ func TestAskRoleHandler_HandleCmd(t *testing.T) {
 			want:    domain.ROLE_CITIZEN,
 			wantErr: false,
 		},
+		{
+			name: "Missing username",
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+			},
+			args: cmd.CmdPayload{
+				UserName: "danybiz",
+			},
+			want:    REPLY_ASK_ROLE_MISSING_USERNAME,
+			wantErr: false,
+		},
+		{
+			name: "Citizen can't ask for another user's role",
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+				session := domain.GameSession{
+					ID:      primitive.ObjectID{},
+					OwnerId: "danybiz",
+					Users: []*domain.UserInfo{
+						{
+							UserId: "danybiz",
+							Role:   domain.ROLE_CITIZEN,
+						},
+						{
+							UserId: "tomi",
+							Role:   domain.ROLE_MAFIA,
+						},
+					},
+					Status: domain.STAGE_DISCUSSION,
+				}
+				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
+					Return(&session, nil)
+			},
+			args: cmd.CmdPayload{
+				UserName: "danybiz",
+				Args:     []string{"tomi"},
+			},
+			want:    REPLY_ASK_ROLE_USER_CANT_KNOW_ROLE,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
