@@ -3,11 +3,12 @@ package domain
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/rand"
+	"tdl/internal/client"
 	"time"
 )
 
 const (
-	// Game Stages
+	// Game Stages, the flow is pending -> mafia -> police -> discussion -> finished
 	STAGE_PENDING    = "pending"
 	STAGE_MAFIA      = "mafia"
 	STAGE_POLICE     = "police"
@@ -33,6 +34,7 @@ type GameSession struct {
 
 type UserInfo struct {
 	UserId   string `json:"user_id" bson:"user_id"`
+	ChatID   int64  `json:"chat_id" bson:"chat_id"`
 	Role     string `json:"role" bson:"role"`
 	Alive    bool   `json:"alive" bson:"alive"`
 	Votes    int    `json:"votes" bson:"votes"`
@@ -131,4 +133,54 @@ func (gs *GameSession) StartGame() bool {
 
 func (gs GameSession) IsUserTheOwner(userId string) bool {
 	return gs.OwnerId == userId
+}
+
+func (gs GameSession) ApplyStageAction() {
+	if gs.Status == STAGE_PENDING {
+		// Nothing to do here
+		return
+	}
+
+	if gs.Status == STAGE_MAFIA {
+		mafiaChatIDs := make([]int64, 0)
+		nonMafiaUsers := make([]string, 0)
+		for _, user := range gs.Users {
+			if user.Role == ROLE_MAFIA {
+				mafiaChatIDs = append(mafiaChatIDs, user.ChatID)
+			} else {
+				nonMafiaUsers = append(nonMafiaUsers, user.UserId)
+			}
+		}
+
+		client.GetTelegramBotClient().
+			BroadcastMsgToUsers(mafiaChatIDs, buildVotationList(nonMafiaUsers, "kill"))
+	}
+
+	if gs.Status == STAGE_POLICE {
+		policeChatIDs := make([]int64, 0)
+		nonPoliceUsers := make([]string, 0)
+		for _, user := range gs.Users {
+			if user.Role == ROLE_POLICE {
+				policeChatIDs = append(policeChatIDs, user.ChatID)
+			} else {
+				nonPoliceUsers = append(nonPoliceUsers, user.UserId)
+			}
+		}
+
+		client.GetTelegramBotClient().
+			BroadcastMsgToUsers(policeChatIDs, buildVotationList(nonPoliceUsers, "ask role"))
+	}
+
+	if gs.Status == STAGE_DISCUSSION {
+		chatIDs := make([]int64, 0)
+		users := make([]string, 0)
+		for _, user := range gs.Users {
+			chatIDs = append(chatIDs, user.ChatID)
+			users = append(users, user.UserId)
+		}
+
+		client.GetTelegramBotClient().
+			BroadcastMsgToUsers(chatIDs, buildVotationList(users, "kick"))
+	}
+
 }

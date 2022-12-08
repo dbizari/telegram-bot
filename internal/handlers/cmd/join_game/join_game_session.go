@@ -46,6 +46,7 @@ func (jgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.Cm
 
 	newUser := &domain.UserInfo{
 		UserId:   payload.UserName,
+		ChatID:   payload.ChatID,
 		Role:     "",
 		Alive:    true,
 		Votes:    0,
