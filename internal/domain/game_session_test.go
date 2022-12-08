@@ -414,3 +414,209 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 		})
 	}
 }
+
+func TestGameSession_CanUserStartTheGame(t *testing.T) {
+	type fields struct {
+		ID      primitive.ObjectID
+		OwnerId string
+		Users   []*UserInfo
+		Status  string
+	}
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "User starts a game that hasn't begun yet",
+			fields: fields{
+				OwnerId: "mily",
+				Users: []*UserInfo{
+					{
+						UserId: "mily",
+					},
+					{
+						UserId: "tomi",
+					},
+				},
+				Status: STAGE_PENDING,
+			},
+			want: true,
+		},
+		{
+			name: "User starts a game that's already begun",
+			fields: fields{
+				OwnerId: "tomi",
+				Users: []*UserInfo{
+					{
+						UserId: "mily",
+					},
+					{
+						UserId: "tomi",
+					},
+				},
+				Status: STAGE_DISCUSSION,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameSession{
+				ID:      tt.fields.ID,
+				OwnerId: tt.fields.OwnerId,
+				Users:   tt.fields.Users,
+				Status:  tt.fields.Status,
+			}
+			if got := gs.CanUserStartTheGame(); got != tt.want {
+				t.Errorf("CanUserStartTheGame() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGameSession_StartGame(t *testing.T) {
+	type fields struct {
+		ID      primitive.ObjectID
+		OwnerId string
+		Users   []*UserInfo
+		Status  string
+	}
+	type want struct {
+		output        bool
+		status        string
+		citizenAmount int
+		mafiaAmount   int
+		policeAmount  int
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   want
+	}{
+		{
+			name: "Not enough users to start the game",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+					},
+					{
+						UserId: "tomi",
+					},
+				},
+				Status: STAGE_PENDING,
+			},
+			want: want{
+				output:        false,
+				status:        STAGE_PENDING,
+				citizenAmount: 0,
+				mafiaAmount:   0,
+				policeAmount:  0,
+			},
+		},
+		{
+			name: "Min users to start the game",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani",
+					},
+					{
+						UserId: "tomi",
+					},
+					{
+						UserId: "mili",
+					},
+				},
+				Status: STAGE_PENDING,
+			},
+			want: want{
+				output:        true,
+				status:        STAGE_MAFIA,
+				citizenAmount: 1,
+				mafiaAmount:   1,
+				policeAmount:  1,
+			},
+		},
+		{
+			name: "Nine users to start the game",
+			fields: fields{
+				Users: []*UserInfo{
+					{
+						UserId: "dani1",
+					},
+					{
+						UserId: "tomi2",
+					},
+					{
+						UserId: "mili3",
+					},
+					{
+						UserId: "dani4",
+					},
+					{
+						UserId: "tomi5",
+					},
+					{
+						UserId: "mili6",
+					},
+					{
+						UserId: "dani7",
+					},
+					{
+						UserId: "tomi8",
+					},
+					{
+						UserId: "mili9",
+					},
+				},
+				Status: STAGE_PENDING,
+			},
+			want: want{
+				output:        true,
+				status:        STAGE_MAFIA,
+				citizenAmount: 5,
+				mafiaAmount:   2,
+				policeAmount:  2,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameSession{
+				ID:      tt.fields.ID,
+				OwnerId: tt.fields.OwnerId,
+				Users:   tt.fields.Users,
+				Status:  tt.fields.Status,
+			}
+			got := gs.StartGame()
+			if got != tt.want.output {
+				t.Errorf("StartGame() = %v, want %v", got, tt.want.output)
+			}
+			if gs.Status != tt.want.status {
+				t.Errorf("Game status = %v, want %v", gs.Status, tt.want.status)
+			}
+			citizenAmountGot := 0
+			policeAmountGot := 0
+			mafiaAmountGot := 0
+
+			for _, user := range gs.Users {
+				switch user.Role {
+				case ROLE_POLICE:
+					policeAmountGot++
+				case ROLE_MAFIA:
+					mafiaAmountGot++
+				case ROLE_CITIZEN:
+					citizenAmountGot++
+				}
+			}
+			if citizenAmountGot != tt.want.citizenAmount || policeAmountGot != tt.want.policeAmount ||
+				mafiaAmountGot != tt.want.mafiaAmount {
+				t.Errorf("Users roles = citizen:%v, mafia:%v, police:%v. Want citizen:%v, mafia:%v, police:%v.",
+					citizenAmountGot, mafiaAmountGot, policeAmountGot, tt.want.citizenAmount, tt.want.mafiaAmount, tt.want.policeAmount)
+			}
+		})
+	}
+}

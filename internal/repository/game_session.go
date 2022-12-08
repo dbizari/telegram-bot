@@ -39,32 +39,26 @@ func GetGameSessionRepositoryClient() GameSessionRepositoryAPI {
 			err = errors.Wrap(err, "failed to create mongodb client")
 			panic(err)
 		}
-
 		err = mongoClient.Ping(ctx, readpref.Primary())
 		if err != nil {
 			err = errors.Wrap(err, "ping failed to mongo")
 			panic(err)
 		}
-
 		client = &gameSessionRepository{
 			Client: mongoClient,
 		}
 	})
-
 	return client
 }
-
 func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error) {
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-
 	res, err := collection.InsertOne(ctx, gameSession)
 	if err != nil {
 		err = errors.Wrap(err, "error trying to create game")
 		return "", err
 	}
-
 	id, _ := res.InsertedID.(primitive.ObjectID)
 	return id.Hex(), nil
 }
