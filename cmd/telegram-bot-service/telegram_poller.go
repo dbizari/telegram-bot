@@ -2,13 +2,13 @@ package main
 
 import (
 	"log"
-	"tdl/internal/client"
+	telegram_client "tdl/internal/clients/telegram"
 	"tdl/internal/handlers/cmd/getter"
 	"tdl/internal/handlers/telegram"
 )
 
 func startTelegramPoller() {
-	bot := client.GetTelegramBotClient()
+	bot := telegram_client.GetTelegramBotClient()
 
 	telegramHandler := telegram.TelegramHandler{
 		BotAPI:    bot,

@@ -5,13 +5,13 @@ import (
 	"errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"log"
-	"tdl/internal/client"
+	"tdl/internal/clients/telegram"
 	"tdl/internal/handlers/cmd"
 	"tdl/internal/handlers/cmd/getter"
 )
 
 type TelegramHandler struct {
-	client.BotAPI
+	telegram.BotAPI
 	getter.CmdGetter
 }
 

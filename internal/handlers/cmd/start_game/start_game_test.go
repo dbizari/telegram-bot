@@ -4,19 +4,22 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"tdl/internal/clients/telegram"
 	"tdl/internal/domain"
 	"tdl/internal/handlers/cmd"
+	mock_telegram "tdl/testing/mocks/handlers_mock/telegram"
 	mock_repository "tdl/testing/mocks/repository_mock"
 	"testing"
 )
 
 func TestStartGameHandler_HandleCmd(t *testing.T) {
 	tests := []struct {
-		name             string
-		fnMockRepository func(repository *mock_repository.MockGameSessionRepositoryAPI)
-		args             cmd.CmdPayload
-		want             string
-		wantErr          bool
+		name              string
+		fnMockRepository  func(repository *mock_repository.MockGameSessionRepositoryAPI)
+		fnMockTelegramBot func(mock *mock_telegram.MockBotAPI)
+		args              cmd.CmdPayload
+		want              string
+		wantErr           bool
 	}{
 		{
 			name: "Happy path",
@@ -32,12 +35,15 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					Users: []*domain.UserInfo{
 						{
 							UserId: "mili",
+							ChatID: 1,
 						},
 						{
 							UserId: "danybiz",
+							ChatID: 2,
 						},
 						{
 							UserId: "tfanciotti",
+							ChatID: 3,
 						},
 					},
 					Status: domain.STAGE_PENDING,
@@ -47,6 +53,9 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 
 				repository.EXPECT().Update(gomock.Any(), gomock.Any()).Times(1).
 					Return(nil)
+			},
+			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {
+				mock.EXPECT().BroadcastMsgToUsers(gomock.Any(), gomock.Any()).Times(1)
 			},
 		},
 		{
@@ -76,6 +85,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
 			},
+			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
 		},
 		{
 			name: "Game already started",
@@ -104,6 +114,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 			},
+			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
 		},
 		{
 			name: "Not enough players",
@@ -129,6 +140,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 			},
+			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
 		},
 	}
 	for _, tt := range tests {
@@ -138,6 +150,10 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 
 			repositoryMock := mock_repository.NewMockGameSessionRepositoryAPI(ctrl)
 			tt.fnMockRepository(repositoryMock)
+
+			tbMock := mock_telegram.NewMockBotAPI(ctrl)
+			tt.fnMockTelegramBot(tbMock)
+			telegram.SetMockTelegramBot(tbMock)
 
 			handler := StartGameHandler{
 				GameSessionRepository: repositoryMock,

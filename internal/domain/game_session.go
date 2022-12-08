@@ -3,7 +3,7 @@ package domain
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/rand"
-	"tdl/internal/client"
+	"tdl/internal/clients/telegram"
 	"time"
 )
 
@@ -152,8 +152,8 @@ func (gs GameSession) ApplyStageAction() {
 			}
 		}
 
-		client.GetTelegramBotClient().
-			BroadcastMsgToUsers(mafiaChatIDs, buildVotationList(nonMafiaUsers, "kill"))
+		telegram.GetTelegramBotClient().
+			BroadcastMsgToUsers(mafiaChatIDs, BuildVotationList(nonMafiaUsers, "kill"))
 	}
 
 	if gs.Status == STAGE_POLICE {
@@ -167,8 +167,8 @@ func (gs GameSession) ApplyStageAction() {
 			}
 		}
 
-		client.GetTelegramBotClient().
-			BroadcastMsgToUsers(policeChatIDs, buildVotationList(nonPoliceUsers, "ask role"))
+		telegram.GetTelegramBotClient().
+			BroadcastMsgToUsers(policeChatIDs, BuildVotationList(nonPoliceUsers, "ask role"))
 	}
 
 	if gs.Status == STAGE_DISCUSSION {
@@ -179,8 +179,8 @@ func (gs GameSession) ApplyStageAction() {
 			users = append(users, user.UserId)
 		}
 
-		client.GetTelegramBotClient().
-			BroadcastMsgToUsers(chatIDs, buildVotationList(users, "kick"))
+		telegram.GetTelegramBotClient().
+			BroadcastMsgToUsers(chatIDs, BuildVotationList(users, "kick"))
 	}
 
 }

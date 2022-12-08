@@ -35,6 +35,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 				expectedPayload := cmd.CmdPayload{
 					Args:     []string{"arg1", "arg2"},
 					UserName: "el_dani_pa",
+					ChatID:   123,
 				}
 				cmdMock.EXPECT().HandleCmd(gomock.Any(), expectedPayload).Times(1).
 					Return("command success", nil)
@@ -42,9 +43,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 					Return(cmdMock, []string{"arg1", "arg2"})
 			},
 			fnMockBotAPI: func(botMock *mock_telegram.MockBotAPI) {
-				expectedMsg := tgbotapi.NewMessage(123, "command success")
-				expectedMsg.ReplyToMessageID = 55667
-				botMock.EXPECT().Send(expectedMsg).Times(1).Return(tgbotapi.Message{}, nil)
+				botMock.EXPECT().SendMsg(int64(123), "command success", 55667).Times(1).Return(nil)
 			},
 		},
 		{
@@ -63,9 +62,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 					Return(nil, nil)
 			},
 			fnMockBotAPI: func(botMock *mock_telegram.MockBotAPI) {
-				expectedMsg := tgbotapi.NewMessage(123, "invalid command")
-				expectedMsg.ReplyToMessageID = 55667
-				botMock.EXPECT().Send(expectedMsg).Times(1).Return(tgbotapi.Message{}, nil)
+				botMock.EXPECT().SendMsg(int64(123), "invalid command", 55667).Times(1).Return(nil)
 			},
 		},
 		{
@@ -83,6 +80,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 				expectedPayload := cmd.CmdPayload{
 					Args:     []string{"arg1", "arg2"},
 					UserName: "el_dani_pa",
+					ChatID:   123,
 				}
 				cmdMock.EXPECT().HandleCmd(gomock.Any(), expectedPayload).Times(1).
 					Return("", errors.New("command failed :("))
@@ -90,9 +88,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 					Return(cmdMock, []string{"arg1", "arg2"})
 			},
 			fnMockBotAPI: func(botMock *mock_telegram.MockBotAPI) {
-				expectedMsg := tgbotapi.NewMessage(123, "something went wrong command failed :(")
-				expectedMsg.ReplyToMessageID = 55667
-				botMock.EXPECT().Send(expectedMsg).Times(1).Return(tgbotapi.Message{}, nil)
+				botMock.EXPECT().SendMsg(int64(123), "something went wrong command failed :(", 55667).Times(1).Return(nil)
 			},
 		},
 		{
@@ -109,6 +105,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 				expectedPayload := cmd.CmdPayload{
 					Args:     []string{"arg1", "arg2"},
 					UserName: "el_dani_pa",
+					ChatID:   123,
 				}
 				cmdMock.EXPECT().HandleCmd(gomock.Any(), expectedPayload).Times(1).
 					Return("command success", nil)
@@ -116,9 +113,7 @@ func TestTelegramHandler_HandleUpdate(t *testing.T) {
 					Return(cmdMock, []string{"arg1", "arg2"})
 			},
 			fnMockBotAPI: func(botMock *mock_telegram.MockBotAPI) {
-				expectedMsg := tgbotapi.NewMessage(123, "command success")
-				expectedMsg.ReplyToMessageID = 55667
-				botMock.EXPECT().Send(expectedMsg).Times(1).Return(tgbotapi.Message{}, errors.New("telegram API failed"))
+				botMock.EXPECT().SendMsg(int64(123), "command success", 55667).Times(1).Return(errors.New("telegram API failed"))
 			},
 		},
 	}

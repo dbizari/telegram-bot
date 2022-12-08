@@ -1,4 +1,4 @@
-package client
+package telegram
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -41,6 +41,11 @@ func GetTelegramBotClient() BotAPI {
 	})
 
 	return instance
+}
+
+func SetMockTelegramBot(mock BotAPI) {
+	once.Do(func() {})
+	instance = mock
 }
 
 func (tb telegramBotImpl) GetUpdatesChan() tgbotapi.UpdatesChannel {
