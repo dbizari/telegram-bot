@@ -29,6 +29,7 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 		Users: []*user_pkg.UserInfo{
 			{
 				UserId:   payload.UserName,
+				ChatID:   payload.ChatID,
 				Role:     "", // ToDo for the moment this is empty, previous start the game the role should be assigned
 				Alive:    true,
 				Votes:    0,

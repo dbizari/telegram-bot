@@ -21,7 +21,7 @@ type StartGameHandler struct {
 }
 
 func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
-	session, err := sgh.GameSessionRepository.GetByMember(ctx, payload.UserName)
+	session, err := sgh.GameSessionRepository.GetNotFinishedGameByMember(ctx, payload.UserName)
 	if err != nil {
 		return "", err
 	}

@@ -28,7 +28,7 @@ func (vh *VoteHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (s
 		return REPLY_VOTE_MISSING_USERNAME, nil
 	}
 
-	session, err := vh.GameSessionRepository.GetByMember(ctx, payload.UserName)
+	session, err := vh.GameSessionRepository.GetNotFinishedGameByMember(ctx, payload.UserName)
 	if err != nil {
 		return "", err
 	}

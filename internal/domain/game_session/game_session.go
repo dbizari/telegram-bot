@@ -155,10 +155,14 @@ func (gs GameSession) StartStage() {
 	gs.Stage.Start(gs.Users)
 }
 
-func (gs GameSession) ApplyStageAction() {
+func (gs *GameSession) ApplyStageAction() {
 	if gs.Stage.IsVotationDone(gs.Users) {
 		gs.Stage.ApplyAction(gs.Users)
 		gs.Stage = gs.Stage.NextStage(gs.Users)
-		// ToDo falta limpiar estado de votaciones de los users
+
+		for _, u := range gs.Users {
+			u.HasVoted = false
+			u.Votes = 0
+		}
 	}
 }
