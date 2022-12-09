@@ -67,6 +67,10 @@ func (m Mafia) Start(users []*user_pkg.UserInfo) {
 	mafiaChatIDs := make([]int64, 0)
 	nonMafiaUsers := make([]string, 0)
 	for _, user := range users {
+		if !user.Alive {
+			continue
+		}
+
 		if user.Role == user_pkg.ROLE_MAFIA {
 			mafiaChatIDs = append(mafiaChatIDs, user.ChatID)
 		} else {

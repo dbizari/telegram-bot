@@ -16,18 +16,12 @@ func BuildVotationList(users []string, action string) string {
 }
 
 func getMostVotedUser(users []*user_pkg.UserInfo) *user_pkg.UserInfo {
-	votes := make(map[*user_pkg.UserInfo]int)
-
-	for _, u := range users {
-		votes[u]++
-	}
-
 	max := 0
 	var votedUser *user_pkg.UserInfo
-	for k, v := range votes {
-		if v >= max {
-			max = v
-			votedUser = k
+	for _, u := range users {
+		if u.Votes >= max {
+			max = u.Votes
+			votedUser = u
 		}
 	}
 

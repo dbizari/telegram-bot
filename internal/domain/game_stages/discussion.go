@@ -11,7 +11,7 @@ type Discussion struct {
 
 func (d Discussion) IsVotationDone(users []*user_pkg.UserInfo) bool {
 	for _, u := range users {
-		if u.HasVoted == false {
+		if u.Alive && u.HasVoted == false {
 			return false
 		}
 	}
@@ -32,7 +32,6 @@ func (d Discussion) ApplyAction(users []*user_pkg.UserInfo) {
 	}
 
 	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, fmt.Sprintf("%s was kicked out with role %s", votedUser.UserId, votedUser.Role))
-	panic("implement me")
 }
 
 func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
@@ -41,6 +40,10 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 
 	chatIDs := make([]int64, 0)
 	for _, u := range users {
+		if !u.Alive {
+			continue
+		}
+
 		if u.Role == user_pkg.ROLE_MAFIA {
 			mafiaCount++
 		} else {

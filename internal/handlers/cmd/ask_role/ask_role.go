@@ -43,5 +43,12 @@ func (arh *AskRoleHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload
 		return REPLY_ASK_ROLE_USER_HAS_NO_ROLE, nil
 	}
 
+	session.Stage.NextStage(session.Users)
+
+	err = arh.GameSessionRepository.Update(ctx, session)
+	if err != nil {
+		return "", err
+	}
+
 	return role, nil
 }
