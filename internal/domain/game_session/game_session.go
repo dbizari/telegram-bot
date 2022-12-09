@@ -1,9 +1,11 @@
 package game_session
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/rand"
+	"tdl/internal/clients/telegram"
 	_ "tdl/internal/clients/telegram"
 	"tdl/internal/domain/game_stages"
 	user_pkg "tdl/internal/domain/user"
@@ -191,4 +193,11 @@ func (gs GameSession) CanUserAskForRole(userId string, userToAsk string) bool {
 	}
 
 	return false
+}
+
+func (gs GameSession) InformRoles() {
+	for _, user := range gs.Users {
+		telegram.GetTelegramBotClient().
+			SendMsg(user.ChatID, fmt.Sprintf("Your role is: %s", user.Role), 0)
+	}
 }

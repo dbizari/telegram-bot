@@ -50,7 +50,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					},
 					Stage: game_stages.Pending{},
 				}
-				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 
 				repository.EXPECT().Update(gomock.Any(), gomock.Any()).Times(1).
@@ -58,6 +58,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {
 				mock.EXPECT().BroadcastMsgToUsers(gomock.Any(), gomock.Any()).Times(1)
+				mock.EXPECT().SendMsg(gomock.Any(), gomock.Any(), gomock.Any()).Times(3)
 			},
 		},
 		{
@@ -84,7 +85,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					},
 					Stage: game_stages.Mafia{},
 				}
-				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
@@ -113,7 +114,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					},
 					Stage: game_stages.Mafia{},
 				}
-				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
@@ -139,7 +140,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					},
 					Stage: game_stages.Pending{},
 				}
-				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},

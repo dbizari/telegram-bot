@@ -22,7 +22,7 @@ func (d Discussion) IsVotationDone(users []*user_pkg.UserInfo) bool {
 func (d Discussion) ApplyAction(users []*user_pkg.UserInfo) {
 	votedUser := getMostVotedUser(users)
 	votedUser.Alive = false
-	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you was voted to be kick out the game :(", 0)
+	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you were voted to be kicked out of the game :(", 0)
 
 	chatIDs := make([]int64, 0)
 	for _, u := range users {
@@ -54,7 +54,7 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 	}
 
 	if mafiaCount == 0 {
-		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "citizens wins !")
+		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "Citizens wins !")
 		return Finished{}
 	}
 
