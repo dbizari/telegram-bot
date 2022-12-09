@@ -1,6 +1,7 @@
 package game_stages
 
 import (
+	"fmt"
 	"tdl/internal/clients/telegram"
 	user_pkg "tdl/internal/domain/user"
 )
@@ -19,12 +20,38 @@ func (m Mafia) IsVotationDone(users []*user_pkg.UserInfo) bool {
 }
 
 func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
-	//TODO implement, recuento de votos, funar al mas votado (alive = false) y hacer broadcast de quien murio
-	panic("implement me")
+	votedUser := getMostVotedUser(users)
+	votedUser.Alive = false
+
+	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you was killed by the mafia...", 0)
+
+	chatIDs := make([]int64, 0)
+	for _, u := range users {
+		if u.Alive {
+			chatIDs = append(chatIDs, u.ChatID)
+		}
+	}
+
+	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, fmt.Sprintf("Unfortunately %s was killed in this round...", votedUser.UserId))
 }
 
 func (m Mafia) NextStage(users []*user_pkg.UserInfo) GameStage {
-	// ToDo mandar mensaje al policia de que elija...
+	chatIDs := make([]int64, 0)
+	aliveUsers := make([]string, 0)
+	for _, u := range users {
+		if u.Role == user_pkg.ROLE_POLICE {
+			chatIDs = append(chatIDs, u.ChatID)
+		} else {
+			if u.Alive {
+				aliveUsers = append(aliveUsers, u.UserId)
+			}
+		}
+	}
+
+	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, BuildVotationList(aliveUsers, "ask role"))
+
+	// ToDo si no hay policia vivo se tiene que pasar directo a discussion
+
 	return Police{}
 }
 
