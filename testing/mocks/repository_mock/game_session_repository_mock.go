@@ -7,7 +7,7 @@ package mock_repository
 import (
 	context "context"
 	reflect "reflect"
-	domain "tdl/internal/domain"
+	domain "tdl/internal/domain/game_session"
 
 	gomock "github.com/golang/mock/gomock"
 )

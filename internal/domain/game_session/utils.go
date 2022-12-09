@@ -1,4 +1,4 @@
-package domain
+package game_session
 
 import "fmt"
 

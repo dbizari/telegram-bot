@@ -6,7 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"tdl/internal/domain"
+	"tdl/internal/domain/game_session"
+	"tdl/internal/domain/game_stages"
+	user_pkg "tdl/internal/domain/user"
 	"tdl/internal/handlers/cmd"
 	mock_repository "tdl/testing/mocks/repository_mock"
 	"testing"
@@ -35,31 +37,31 @@ func TestVoteHandler_HandleCmd(t *testing.T) {
 			want:    fmt.Sprintf(REPLY_VOTE, "tfanciotti"),
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := domain.GameSession{
+				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
 					OwnerId: "danybiz",
-					Users: []*domain.UserInfo{
+					Users: []*user_pkg.UserInfo{
 						{
 							UserId:   "danybiz",
-							Role:     domain.ROLE_MAFIA,
+							Role:     user_pkg.ROLE_MAFIA,
 							Alive:    true,
 							Votes:    0,
 							HasVoted: false,
 						},
 						{
 							UserId:   "tfanciotti",
-							Role:     domain.ROLE_CITIZEN,
+							Role:     user_pkg.ROLE_CITIZEN,
 							Alive:    true,
 							Votes:    0,
 							HasVoted: false,
 						},
 					},
-					Status: domain.STAGE_DISCUSSION,
+					Stage: game_stages.Discussion{},
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
 
-				var expectedSession domain.GameSession = session
+				var expectedSession game_session.GameSession = session
 				expectedSession.Users[0].HasVoted = false
 				expectedSession.Users[1].Votes++
 

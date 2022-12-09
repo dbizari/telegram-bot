@@ -7,7 +7,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"reflect"
-	"tdl/internal/domain"
+	"tdl/internal/domain/game_session"
+	user_pkg "tdl/internal/domain/user"
 	"tdl/internal/handlers/cmd"
 	mock_repository "tdl/testing/mocks/repository_mock"
 	"testing"
@@ -37,14 +38,14 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
 				repository.EXPECT().CreateGame(gomock.Any(), gomock.Any()).Times(1).
-					DoAndReturn(func(ctx context.Context, gameSession *domain.GameSession) (string, error) {
+					DoAndReturn(func(ctx context.Context, gameSession *game_session.GameSession) (string, error) {
 						if !gameSession.ID.IsZero() {
 							return "", fmt.Errorf("expected gameSession.ID to be 0")
 						}
 
 						expectedStatus := "pending"
-						if gameSession.Status != expectedStatus {
-							return "", fmt.Errorf("expected status: %s , received: %s", expectedStatus, gameSession.Status)
+						if gameSession.Stage.GetStageName() != expectedStatus {
+							return "", fmt.Errorf("expected status: %s , received: %s", expectedStatus, gameSession.Stage)
 						}
 
 						expectedUsername := "danybiz"
@@ -52,7 +53,7 @@ func TestCreateGameSessionHandler_HandleCmd(t *testing.T) {
 							return "", fmt.Errorf("expected username: %s , received: %s", expectedUsername, gameSession.OwnerId)
 						}
 
-						expectedUsers := []*domain.UserInfo{{
+						expectedUsers := []*user_pkg.UserInfo{{
 							UserId:   "danybiz",
 							Role:     "",
 							Alive:    true,

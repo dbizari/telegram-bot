@@ -1,8 +1,10 @@
-package domain
+package game_session
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
+	"tdl/internal/domain/game_stages"
+	user_pkg "tdl/internal/domain/user"
 	"testing"
 )
 
@@ -10,8 +12,8 @@ func TestGameSession_CanUserVote(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 	type args struct {
 		userID string
@@ -25,13 +27,13 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Mafia person votes on Mafia stage",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					HasVoted: false,
 				}},
-				Status: STAGE_MAFIA,
+				Stage: game_stages.Mafia{},
 			},
 			args: args{
 				userID: "dani",
@@ -41,7 +43,7 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Dead user cannot vote",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId: "dani",
 					Alive:  false,
 				}},
@@ -54,13 +56,13 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Citizen cannot vote on Mafia stage",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_CITIZEN,
+					Role:     user_pkg.ROLE_CITIZEN,
 					HasVoted: false,
 				}},
-				Status: STAGE_MAFIA,
+				Stage: game_stages.Mafia{},
 			},
 			args: args{
 				userID: "dani",
@@ -70,13 +72,13 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Mafia person votes on Discussion stage",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					HasVoted: false,
 				}},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{
 				userID: "dani",
@@ -86,13 +88,13 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Citizen person votes on Discussion stage",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					HasVoted: false,
 				}},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{
 				userID: "dani",
@@ -102,13 +104,13 @@ func TestGameSession_CanUserVote(t *testing.T) {
 		{
 			name: "Citizen person votes on Police stage",
 			fields: fields{
-				Users: []*UserInfo{{
+				Users: []*user_pkg.UserInfo{{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					HasVoted: false,
 				}},
-				Status: STAGE_POLICE,
+				Stage: game_stages.Police{},
 			},
 			args: args{
 				userID: "dani",
@@ -122,7 +124,7 @@ func TestGameSession_CanUserVote(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			if got := gs.CanUserVote(tt.args.userID); got != tt.want {
 				t.Errorf("CanUserVote() = %v, want %v", got, tt.want)
@@ -135,8 +137,8 @@ func TestGameSession_ApplyVote(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 	type args struct {
 		votingUserID string
@@ -147,44 +149,44 @@ func TestGameSession_ApplyVote(t *testing.T) {
 		fields        fields
 		args          args
 		want          bool
-		expectedUsers []*UserInfo
+		expectedUsers []*user_pkg.UserInfo
 	}{
 		{
 			name: "Dani votes tomi",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId:   "dani",
 						Alive:    true,
-						Role:     ROLE_MAFIA,
+						Role:     user_pkg.ROLE_MAFIA,
 						HasVoted: false,
 					},
 					{
 						UserId:   "tomi",
 						Alive:    true,
-						Role:     ROLE_CITIZEN,
+						Role:     user_pkg.ROLE_CITIZEN,
 						HasVoted: false,
 					},
 				},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{
 				votingUserID: "dani",
 				votedUserID:  "tomi",
 			},
 			want: true,
-			expectedUsers: []*UserInfo{
+			expectedUsers: []*user_pkg.UserInfo{
 				{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					Votes:    0,
 					HasVoted: true,
 				},
 				{
 					UserId:   "tomi",
 					Alive:    true,
-					Role:     ROLE_CITIZEN,
+					Role:     user_pkg.ROLE_CITIZEN,
 					HasVoted: false,
 					Votes:    1,
 				},
@@ -193,38 +195,38 @@ func TestGameSession_ApplyVote(t *testing.T) {
 		{
 			name: "Dani votes inexistent username",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId:   "dani",
 						Alive:    true,
-						Role:     ROLE_MAFIA,
+						Role:     user_pkg.ROLE_MAFIA,
 						HasVoted: false,
 					},
 					{
 						UserId:   "tomi",
 						Alive:    true,
-						Role:     ROLE_CITIZEN,
+						Role:     user_pkg.ROLE_CITIZEN,
 						HasVoted: false,
 					},
 				},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{
 				votingUserID: "dani",
 				votedUserID:  "invalid-user",
 			},
 			want: false,
-			expectedUsers: []*UserInfo{
+			expectedUsers: []*user_pkg.UserInfo{
 				{
 					UserId:   "dani",
 					Alive:    true,
-					Role:     ROLE_MAFIA,
+					Role:     user_pkg.ROLE_MAFIA,
 					HasVoted: true,
 				},
 				{
 					UserId:   "tomi",
 					Alive:    true,
-					Role:     ROLE_CITIZEN,
+					Role:     user_pkg.ROLE_CITIZEN,
 					HasVoted: false,
 				},
 			},
@@ -236,7 +238,7 @@ func TestGameSession_ApplyVote(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			if got := gs.ApplyVote(tt.args.votingUserID, tt.args.votedUserID); got != tt.want {
 				t.Errorf("ApplyVote() = %v, want %v", got, tt.want)
@@ -253,8 +255,8 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 
 	tests := []struct {
@@ -266,7 +268,7 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 			name: "User starts a game that hasn't begun yet",
 			fields: fields{
 				OwnerId: "mily",
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "mily",
 					},
@@ -274,7 +276,7 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 						UserId: "tomi",
 					},
 				},
-				Status: STAGE_PENDING,
+				Stage: game_stages.Pending{},
 			},
 			want: true,
 		},
@@ -282,7 +284,7 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 			name: "User starts a game that's already begun",
 			fields: fields{
 				OwnerId: "tomi",
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "mily",
 					},
@@ -290,7 +292,7 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 						UserId: "tomi",
 					},
 				},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			want: false,
 		},
@@ -301,7 +303,7 @@ func TestGameSession_CanUserStartTheGame(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			if got := gs.CanUserStartTheGame(); got != tt.want {
 				t.Errorf("CanUserStartTheGame() = %v, want %v", got, tt.want)
@@ -314,8 +316,8 @@ func TestGameSession_StartGame(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 	type want struct {
 		output        bool
@@ -332,7 +334,7 @@ func TestGameSession_StartGame(t *testing.T) {
 		{
 			name: "Not enough users to start the game",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
 					},
@@ -340,11 +342,11 @@ func TestGameSession_StartGame(t *testing.T) {
 						UserId: "tomi",
 					},
 				},
-				Status: STAGE_PENDING,
+				Stage: game_stages.Pending{},
 			},
 			want: want{
 				output:        false,
-				status:        STAGE_PENDING,
+				status:        game_stages.STAGE_PENDING,
 				citizenAmount: 0,
 				mafiaAmount:   0,
 				policeAmount:  0,
@@ -353,7 +355,7 @@ func TestGameSession_StartGame(t *testing.T) {
 		{
 			name: "Min users to start the game",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
 					},
@@ -364,11 +366,11 @@ func TestGameSession_StartGame(t *testing.T) {
 						UserId: "mili",
 					},
 				},
-				Status: STAGE_PENDING,
+				Stage: game_stages.Pending{},
 			},
 			want: want{
 				output:        true,
-				status:        STAGE_MAFIA,
+				status:        game_stages.STAGE_MAFIA,
 				citizenAmount: 1,
 				mafiaAmount:   1,
 				policeAmount:  1,
@@ -377,7 +379,7 @@ func TestGameSession_StartGame(t *testing.T) {
 		{
 			name: "Nine users to start the game",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani1",
 					},
@@ -406,11 +408,11 @@ func TestGameSession_StartGame(t *testing.T) {
 						UserId: "mili9",
 					},
 				},
-				Status: STAGE_PENDING,
+				Stage: game_stages.Pending{},
 			},
 			want: want{
 				output:        true,
-				status:        STAGE_MAFIA,
+				status:        game_stages.STAGE_MAFIA,
 				citizenAmount: 5,
 				mafiaAmount:   2,
 				policeAmount:  2,
@@ -423,14 +425,14 @@ func TestGameSession_StartGame(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			got := gs.StartGame()
 			if got != tt.want.output {
 				t.Errorf("StartGame() = %v, want %v", got, tt.want.output)
 			}
-			if gs.Status != tt.want.status {
-				t.Errorf("Game status = %v, want %v", gs.Status, tt.want.status)
+			if gs.Stage.GetStageName() != tt.want.status {
+				t.Errorf("Game status = %v, want %v", gs.Stage, tt.want.status)
 			}
 			citizenAmountGot := 0
 			policeAmountGot := 0
@@ -438,11 +440,11 @@ func TestGameSession_StartGame(t *testing.T) {
 
 			for _, user := range gs.Users {
 				switch user.Role {
-				case ROLE_POLICE:
+				case user_pkg.ROLE_POLICE:
 					policeAmountGot++
-				case ROLE_MAFIA:
+				case user_pkg.ROLE_MAFIA:
 					mafiaAmountGot++
-				case ROLE_CITIZEN:
+				case user_pkg.ROLE_CITIZEN:
 					citizenAmountGot++
 				}
 			}

@@ -5,7 +5,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"tdl/internal/clients/telegram"
-	"tdl/internal/domain"
+	"tdl/internal/domain/game_session"
+	"tdl/internal/domain/game_stages"
+	user_pkg "tdl/internal/domain/user"
 	"tdl/internal/handlers/cmd"
 	mock_telegram "tdl/testing/mocks/handlers_mock/telegram"
 	mock_repository "tdl/testing/mocks/repository_mock"
@@ -29,10 +31,10 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			want:    REPLY_START_GAME,
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := domain.GameSession{
+				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
 					OwnerId: "mili",
-					Users: []*domain.UserInfo{
+					Users: []*user_pkg.UserInfo{
 						{
 							UserId: "mili",
 							ChatID: 1,
@@ -46,7 +48,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 							ChatID: 3,
 						},
 					},
-					Status: domain.STAGE_PENDING,
+					Stage: game_stages.Pending{},
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
@@ -66,10 +68,10 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			want:    REPLY_START_GAME_USER_IS_NOT_OWNER,
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := domain.GameSession{
+				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
 					OwnerId: "mili",
-					Users: []*domain.UserInfo{
+					Users: []*user_pkg.UserInfo{
 						{
 							UserId: "mili",
 						},
@@ -80,7 +82,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 							UserId: "tfanciotti",
 						},
 					},
-					Status: domain.STAGE_MAFIA,
+					Stage: game_stages.Mafia{},
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
@@ -95,10 +97,10 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			want:    REPLY_START_GAME_ALREADY_STARTED,
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := domain.GameSession{
+				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
 					OwnerId: "mili",
-					Users: []*domain.UserInfo{
+					Users: []*user_pkg.UserInfo{
 						{
 							UserId: "mili",
 						},
@@ -109,7 +111,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 							UserId: "tfanciotti",
 						},
 					},
-					Status: domain.STAGE_MAFIA,
+					Stage: game_stages.Mafia{},
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)
@@ -124,10 +126,10 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			want:    REPLY_START_GAME_NOT_ENOUGH_PLAYERS,
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := domain.GameSession{
+				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
 					OwnerId: "mili",
-					Users: []*domain.UserInfo{
+					Users: []*user_pkg.UserInfo{
 						{
 							UserId: "mili",
 						},
@@ -135,7 +137,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 							UserId: "danybiz",
 						},
 					},
-					Status: domain.STAGE_PENDING,
+					Stage: game_stages.Pending{},
 				}
 				repository.EXPECT().GetByMember(gomock.Any(), "mili").Times(1).
 					Return(&session, nil)

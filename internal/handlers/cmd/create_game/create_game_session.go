@@ -3,7 +3,9 @@ package create_game
 import (
 	"context"
 	"fmt"
-	"tdl/internal/domain"
+	"tdl/internal/domain/game_session"
+	"tdl/internal/domain/game_stages"
+	user_pkg "tdl/internal/domain/user"
 	"tdl/internal/handlers/cmd"
 	"tdl/internal/repository"
 )
@@ -22,9 +24,9 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 		return "", fmt.Errorf("error on create game session handler, username should not be empty")
 	}
 
-	gameSession := &domain.GameSession{
+	gameSession := &game_session.GameSession{
 		OwnerId: payload.UserName,
-		Users: []*domain.UserInfo{
+		Users: []*user_pkg.UserInfo{
 			{
 				UserId:   payload.UserName,
 				Role:     "", // ToDo for the moment this is empty, previous start the game the role should be assigned
@@ -33,7 +35,7 @@ func (cgsh CreateGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.
 				HasVoted: false,
 			},
 		},
-		Status: domain.STAGE_PENDING,
+		Stage: game_stages.Pending{},
 	}
 
 	id, err := cgsh.Repository.CreateGame(ctx, gameSession)
