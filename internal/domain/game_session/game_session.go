@@ -166,3 +166,29 @@ func (gs *GameSession) ApplyStageAction() {
 		}
 	}
 }
+
+func (gs GameSession) GetRole(userId string) string {
+	var role string
+
+	for _, user := range gs.Users {
+		if user.UserId == userId {
+			role = user.Role
+		}
+	}
+
+	return role
+}
+
+func (gs GameSession) CanUserAskForRole(userId string, userToAsk string) bool {
+	userRole := gs.GetRole(userId)
+
+	if userRole == "" {
+		return false
+	}
+
+	if userId == userToAsk || (userRole == user_pkg.ROLE_POLICE && gs.Stage.GetStageName() == game_stages.STAGE_POLICE) {
+		return true
+	}
+
+	return false
+}

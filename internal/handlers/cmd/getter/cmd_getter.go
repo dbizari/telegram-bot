@@ -3,6 +3,7 @@ package getter
 import (
 	"strings"
 	"tdl/internal/handlers/cmd"
+	"tdl/internal/handlers/cmd/ask_role"
 	"tdl/internal/handlers/cmd/create_game"
 	"tdl/internal/handlers/cmd/exit_game"
 	"tdl/internal/handlers/cmd/join_game"
@@ -26,6 +27,8 @@ func (cgi CmdGetterImpl) GetCmdAndArgsFromMessage(message string) (cmd.CmdHandle
 	switch splittedMessage[0] {
 	case create_game.CMD_CREATE_GAME:
 		command = &create_game.CreateGameSessionHandler{Repository: repository.GetGameSessionRepositoryClient()}
+	case ask_role.CMD_ASK_ROLE:
+		command = &ask_role.AskRoleHandler{GameSessionRepository: repository.GetGameSessionRepositoryClient()}
 	case start_game.CMD_START_GAME:
 		command = &start_game.StartGameHandler{GameSessionRepository: repository.GetGameSessionRepositoryClient()}
 	case vote.CMD_VOTE:
