@@ -1,4 +1,4 @@
-package game_session
+package game_stages
 
 import "fmt"
 

@@ -1,6 +1,8 @@
 package game_stages
 
-import user_pkg "tdl/internal/domain/user"
+import (
+	user_pkg "tdl/internal/domain/user"
+)
 
 type Pending struct {
 }
@@ -11,4 +13,8 @@ func (p Pending) CanUserVote(user user_pkg.UserInfo) bool {
 
 func (p Pending) GetStageName() string {
 	return STAGE_PENDING
+}
+
+func (p Pending) Start(users []*user_pkg.UserInfo) {
+	// Nothing to de here
 }

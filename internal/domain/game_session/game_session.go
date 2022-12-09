@@ -168,52 +168,6 @@ func (gs GameSession) IsUserTheOwner(userId string) bool {
 	return gs.OwnerId == userId
 }
 
-func (gs GameSession) ApplyStageAction() {
-	//if gs.Stage == STAGE_PENDING {
-	//	// Nothing to do here
-	//	return
-	//}
-	//
-	//if gs.Stage == STAGE_MAFIA {
-	//	mafiaChatIDs := make([]int64, 0)
-	//	nonMafiaUsers := make([]string, 0)
-	//	for _, user := range gs.Users {
-	//		if user.Role == ROLE_MAFIA {
-	//			mafiaChatIDs = append(mafiaChatIDs, user.ChatID)
-	//		} else {
-	//			nonMafiaUsers = append(nonMafiaUsers, user.UserId)
-	//		}
-	//	}
-	//
-	//	telegram.GetTelegramBotClient().
-	//		BroadcastMsgToUsers(mafiaChatIDs, BuildVotationList(nonMafiaUsers, "kill"))
-	//}
-	//
-	//if gs.Stage == STAGE_POLICE {
-	//	policeChatIDs := make([]int64, 0)
-	//	nonPoliceUsers := make([]string, 0)
-	//	for _, user := range gs.Users {
-	//		if user.Role == ROLE_POLICE {
-	//			policeChatIDs = append(policeChatIDs, user.ChatID)
-	//		} else {
-	//			nonPoliceUsers = append(nonPoliceUsers, user.UserId)
-	//		}
-	//	}
-	//
-	//	telegram.GetTelegramBotClient().
-	//		BroadcastMsgToUsers(policeChatIDs, BuildVotationList(nonPoliceUsers, "ask role"))
-	//}
-	//
-	//if gs.Stage == STAGE_DISCUSSION {
-	//	chatIDs := make([]int64, 0)
-	//	users := make([]string, 0)
-	//	for _, user := range gs.Users {
-	//		chatIDs = append(chatIDs, user.ChatID)
-	//		users = append(users, user.UserId)
-	//	}
-	//
-	//	telegram.GetTelegramBotClient().
-	//		BroadcastMsgToUsers(chatIDs, BuildVotationList(users, "kick"))
-	//}
-	return
+func (gs GameSession) StartStage() {
+	gs.Stage.Start(gs.Users)
 }

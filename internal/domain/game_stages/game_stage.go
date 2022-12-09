@@ -14,4 +14,5 @@ const (
 type GameStage interface {
 	GetStageName() string
 	CanUserVote(user user_pkg.UserInfo) bool
+	Start(users []*user_pkg.UserInfo)
 }
