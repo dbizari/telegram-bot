@@ -8,6 +8,20 @@ import (
 type Police struct {
 }
 
+func (p Police) IsVotationDone(users []*user_pkg.UserInfo) bool {
+	return false
+}
+
+func (p Police) ApplyAction(users []*user_pkg.UserInfo) {
+	// Esto se resuelve con el comando /ask role
+	panic("shouldn't be called")
+}
+
+func (p Police) NextStage(users []*user_pkg.UserInfo) GameStage {
+	// Todo hacer broadcast de que tienen que votar
+	return Discussion{}
+}
+
 func (p Police) GetStageName() string {
 	return STAGE_POLICE
 }

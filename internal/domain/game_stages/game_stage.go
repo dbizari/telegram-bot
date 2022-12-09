@@ -15,4 +15,7 @@ type GameStage interface {
 	GetStageName() string
 	CanUserVote(user user_pkg.UserInfo) bool
 	Start(users []*user_pkg.UserInfo)
+	IsVotationDone(users []*user_pkg.UserInfo) bool
+	ApplyAction(users []*user_pkg.UserInfo)
+	NextStage(users []*user_pkg.UserInfo) GameStage
 }

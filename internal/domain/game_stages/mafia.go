@@ -8,6 +8,26 @@ import (
 type Mafia struct {
 }
 
+func (m Mafia) IsVotationDone(users []*user_pkg.UserInfo) bool {
+	for _, u := range users {
+		if u.Role == user_pkg.ROLE_MAFIA && u.HasVoted == false {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
+	//TODO implement, recuento de votos, funar al mas votado (alive = false) y hacer broadcast de quien murio
+	panic("implement me")
+}
+
+func (m Mafia) NextStage(users []*user_pkg.UserInfo) GameStage {
+	// ToDo mandar mensaje al policia de que elija...
+	return Police{}
+}
+
 func (m Mafia) CanUserVote(user user_pkg.UserInfo) bool {
 	return user.Role == user_pkg.ROLE_MAFIA && !user.HasVoted
 }

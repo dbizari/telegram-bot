@@ -45,6 +45,8 @@ func (vh *VoteHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (s
 		return fmt.Sprintf(REPLY_VOTE_USER_NOT_FOUND, payload.Args[0]), nil
 	}
 
+	session.ApplyStageAction()
+
 	err = vh.GameSessionRepository.Update(ctx, session)
 	if err != nil {
 		return "", err
