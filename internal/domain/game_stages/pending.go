@@ -7,7 +7,7 @@ import (
 type Pending struct {
 }
 
-func (p Pending) IsVotationDone(users []*user_pkg.UserInfo) bool {
+func (p Pending) IsVotingDone(users []*user_pkg.UserInfo) bool {
 	return false
 }
 

@@ -8,7 +8,7 @@ import (
 type Police struct {
 }
 
-func (p Police) IsVotationDone(users []*user_pkg.UserInfo) bool {
+func (p Police) IsVotingDone(users []*user_pkg.UserInfo) bool {
 	return false
 }
 

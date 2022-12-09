@@ -158,7 +158,7 @@ func (gs GameSession) StartStage() {
 }
 
 func (gs *GameSession) ApplyStageAction() {
-	if gs.Stage.IsVotationDone(gs.Users) {
+	if gs.Stage.IsVotingDone(gs.Users) {
 		gs.Stage.ApplyAction(gs.Users)
 		gs.Stage = gs.Stage.NextStage(gs.Users)
 

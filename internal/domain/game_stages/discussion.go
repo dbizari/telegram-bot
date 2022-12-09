@@ -9,7 +9,7 @@ import (
 type Discussion struct {
 }
 
-func (d Discussion) IsVotationDone(users []*user_pkg.UserInfo) bool {
+func (d Discussion) IsVotingDone(users []*user_pkg.UserInfo) bool {
 	for _, u := range users {
 		if u.Alive && u.HasVoted == false {
 			return false
@@ -58,7 +58,7 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 		return Finished{}
 	}
 
-	if mafiaCount > citizenCount {
+	if mafiaCount > citizenCount || (len(users) == 2 && mafiaCount == 1) {
 		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "Mafia wins !")
 		return Finished{}
 	}

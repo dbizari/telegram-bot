@@ -5,7 +5,7 @@ import user_pkg "tdl/internal/domain/user"
 type Finished struct {
 }
 
-func (f Finished) IsVotationDone(users []*user_pkg.UserInfo) bool {
+func (f Finished) IsVotingDone(users []*user_pkg.UserInfo) bool {
 	//TODO implement me
 	panic("implement me")
 }

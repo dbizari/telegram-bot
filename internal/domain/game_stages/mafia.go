@@ -9,7 +9,7 @@ import (
 type Mafia struct {
 }
 
-func (m Mafia) IsVotationDone(users []*user_pkg.UserInfo) bool {
+func (m Mafia) IsVotingDone(users []*user_pkg.UserInfo) bool {
 	for _, u := range users {
 		if u.Role == user_pkg.ROLE_MAFIA && u.HasVoted == false {
 			return false
@@ -23,7 +23,7 @@ func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
 	votedUser := getMostVotedUser(users)
 	votedUser.Alive = false
 
-	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you was killed by the mafia...", 0)
+	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you were killed by the mafia...", 0)
 
 	chatIDs := make([]int64, 0)
 	for _, u := range users {
@@ -38,9 +38,13 @@ func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
 func (m Mafia) NextStage(users []*user_pkg.UserInfo) GameStage {
 	chatIDs := make([]int64, 0)
 	aliveUsers := make([]string, 0)
+	isAnyPoliceAlive := false
 	for _, u := range users {
 		if u.Role == user_pkg.ROLE_POLICE {
 			chatIDs = append(chatIDs, u.ChatID)
+			if u.Alive {
+				isAnyPoliceAlive = true
+			}
 		} else {
 			if u.Alive {
 				aliveUsers = append(aliveUsers, u.UserId)
@@ -50,9 +54,10 @@ func (m Mafia) NextStage(users []*user_pkg.UserInfo) GameStage {
 
 	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, BuildVotationList(aliveUsers, "ask role"))
 
-	// ToDo si no hay policia vivo se tiene que pasar directo a discussion
-
-	return Police{}
+	if isAnyPoliceAlive {
+		return Police{}
+	}
+	return Discussion{}
 }
 
 func (m Mafia) CanUserVote(user user_pkg.UserInfo) bool {
