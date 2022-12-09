@@ -18,7 +18,18 @@ func (p Police) ApplyAction(users []*user_pkg.UserInfo) {
 }
 
 func (p Police) NextStage(users []*user_pkg.UserInfo) GameStage {
-	// Todo hacer broadcast de que tienen que votar
+	chatIDs := make([]int64, 0)
+	aliveUsers := make([]string, 0)
+	for _, u := range users {
+		if u.Alive {
+			aliveUsers = append(aliveUsers, u.UserId)
+			chatIDs = append(chatIDs, u.ChatID)
+		}
+	}
+
+	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "Discussion time... Feel free to chat with the players")
+	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, BuildVotationList(aliveUsers, "kick"))
+
 	return Discussion{}
 }
 
