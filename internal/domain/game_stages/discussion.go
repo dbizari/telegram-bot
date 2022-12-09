@@ -1,6 +1,7 @@
 package game_stages
 
 import (
+	"fmt"
 	"tdl/internal/clients/telegram"
 	user_pkg "tdl/internal/domain/user"
 )
@@ -19,19 +20,50 @@ func (d Discussion) IsVotationDone(users []*user_pkg.UserInfo) bool {
 }
 
 func (d Discussion) ApplyAction(users []*user_pkg.UserInfo) {
-	//TODO implement, recuento de votos, funar al mas votado (alive = false) y hacer broadcast de quien murio
+	votedUser := getMostVotedUser(users)
+	votedUser.Alive = false
+	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you was voted to be kick out the game :(", 0)
+
+	chatIDs := make([]int64, 0)
+	for _, u := range users {
+		if u.Alive {
+			chatIDs = append(chatIDs, u.ChatID)
+		}
+	}
+
+	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, fmt.Sprintf("%s was kicked out with role %s", votedUser.UserId, votedUser.Role))
 	panic("implement me")
 }
 
 func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
-	// ToDo implementar
-	//if termino el juego {
-	//	broadcast del ganador
-	//	return Finished{}
-	//} else {
-	//	return Mafia{}
-	//}
-	panic("implement me")
+	mafiaCount := 0
+	citizenCount := 0
+
+	chatIDs := make([]int64, 0)
+	for _, u := range users {
+		if u.Role == user_pkg.ROLE_MAFIA {
+			mafiaCount++
+		} else {
+			citizenCount++
+		}
+
+		chatIDs = append(chatIDs, u.ChatID)
+	}
+
+	if mafiaCount == 0 {
+		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "citizens wins !")
+		return Finished{}
+	}
+
+	if mafiaCount > citizenCount {
+		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "Mafia wins !")
+		return Finished{}
+	}
+
+	// Game must go on
+	newStage := Mafia{}
+	newStage.Start(users)
+	return newStage
 }
 
 func (d Discussion) CanUserVote(user user_pkg.UserInfo) bool {
