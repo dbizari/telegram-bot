@@ -58,10 +58,10 @@ func TestVoteHandler_HandleCmd(t *testing.T) {
 					},
 					Stage: game_stages.Discussion{},
 				}
-				repository.EXPECT().GetByMember(gomock.Any(), "danybiz").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
 
-				var expectedSession game_session.GameSession = session
+				var expectedSession = session
 				expectedSession.Users[0].HasVoted = false
 				expectedSession.Users[1].Votes++
 

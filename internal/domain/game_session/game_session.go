@@ -188,7 +188,7 @@ func (gs GameSession) CanUserAskForRole(userId string, userToAsk string) bool {
 		return false
 	}
 
-	if userId == userToAsk || (userRole == user_pkg.ROLE_POLICE && gs.Stage.GetStageName() == game_stages.STAGE_POLICE) {
+	if userRole == user_pkg.ROLE_POLICE && gs.Stage.GetStageName() == game_stages.STAGE_POLICE {
 		return true
 	}
 

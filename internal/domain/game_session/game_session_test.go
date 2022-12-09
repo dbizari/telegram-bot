@@ -255,8 +255,8 @@ func TestGameSession_GetRole(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 	type args struct {
 		userId string
@@ -270,24 +270,24 @@ func TestGameSession_GetRole(t *testing.T) {
 		{
 			name: "User gets their role",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
-						Role:   ROLE_MAFIA,
+						Role:   user_pkg.ROLE_MAFIA,
 					},
 					{
 						UserId: "tomi",
-						Role:   ROLE_CITIZEN,
+						Role:   user_pkg.ROLE_CITIZEN,
 					},
 				},
 			},
 			args: args{userId: "dani"},
-			want: ROLE_MAFIA,
+			want: user_pkg.ROLE_MAFIA,
 		},
 		{
 			name: "User doesn't have a role",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
 					},
@@ -303,7 +303,7 @@ func TestGameSession_GetRole(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			if got := gs.GetRole(tt.args.userId); got != tt.want {
 				t.Errorf("GetRole() = %v, want %v", got, tt.want)
@@ -316,8 +316,8 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 	type fields struct {
 		ID      primitive.ObjectID
 		OwnerId string
-		Users   []*UserInfo
-		Status  string
+		Users   []*user_pkg.UserInfo
+		Stage   game_stages.GameStage
 	}
 	type args struct {
 		userId    string
@@ -332,17 +332,17 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 		{
 			name: "Police asks for role on their turn",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
-						Role:   ROLE_POLICE,
+						Role:   user_pkg.ROLE_POLICE,
 					},
 					{
 						UserId: "mili",
-						Role:   ROLE_MAFIA,
+						Role:   user_pkg.ROLE_MAFIA,
 					},
 				},
-				Status: STAGE_POLICE,
+				Stage: game_stages.Police{},
 			},
 			args: args{userId: "dani", userToAsk: "mili"},
 			want: true,
@@ -350,53 +350,35 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 		{
 			name: "Police asks for role when it's not their turn",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
-						Role:   ROLE_POLICE,
+						Role:   user_pkg.ROLE_POLICE,
 					},
 					{
 						UserId: "mili",
-						Role:   ROLE_MAFIA,
+						Role:   user_pkg.ROLE_MAFIA,
 					},
 				},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{userId: "dani", userToAsk: "mili"},
 			want: false,
 		},
 		{
-			name: "User asks for their own role",
-			fields: fields{
-				Users: []*UserInfo{
-					{
-						UserId: "dani",
-						Role:   ROLE_POLICE,
-					},
-					{
-						UserId: "mili",
-						Role:   ROLE_MAFIA,
-					},
-				},
-				Status: STAGE_DISCUSSION,
-			},
-			args: args{userId: "mili", userToAsk: "mili"},
-			want: true,
-		},
-		{
 			name: "User asks for another user's role",
 			fields: fields{
-				Users: []*UserInfo{
+				Users: []*user_pkg.UserInfo{
 					{
 						UserId: "dani",
-						Role:   ROLE_CITIZEN,
+						Role:   user_pkg.ROLE_CITIZEN,
 					},
 					{
 						UserId: "mili",
-						Role:   ROLE_MAFIA,
+						Role:   user_pkg.ROLE_MAFIA,
 					},
 				},
-				Status: STAGE_DISCUSSION,
+				Stage: game_stages.Discussion{},
 			},
 			args: args{userId: "dani", userToAsk: "mili"},
 			want: false,
@@ -408,7 +390,7 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 				ID:      tt.fields.ID,
 				OwnerId: tt.fields.OwnerId,
 				Users:   tt.fields.Users,
-				Status:  tt.fields.Status,
+				Stage:   tt.fields.Stage,
 			}
 			if got := gs.CanUserAskForRole(tt.args.userId, tt.args.userToAsk); got != tt.want {
 				t.Errorf("CanUserAskForRole() = %v, want %v", got, tt.want)
