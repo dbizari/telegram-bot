@@ -86,5 +86,7 @@ func (d Discussion) Start(users []*user_pkg.UserInfo) {
 	}
 
 	telegram.GetTelegramBotClient().
+		BroadcastMsgToUsers(chatIDs, "Debating time! Who should be kicked out of the city?")
+	telegram.GetTelegramBotClient().
 		BroadcastMsgToUsers(chatIDs, BuildVotationList(allUsers, "kick"))
 }

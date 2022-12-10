@@ -392,7 +392,7 @@ func TestGameSession_CanUserAskForRole(t *testing.T) {
 				Users:   tt.fields.Users,
 				Stage:   tt.fields.Stage,
 			}
-			if got := gs.CanUserAskForRole(tt.args.userId, tt.args.userToAsk); got != tt.want {
+			if got := gs.CanUserAskForRole(tt.args.userId); got != tt.want {
 				t.Errorf("CanUserAskForRole() = %v, want %v", got, tt.want)
 			}
 		})

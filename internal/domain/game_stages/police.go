@@ -44,14 +44,18 @@ func (p Police) CanUserVote(user user_pkg.UserInfo) bool {
 func (p Police) Start(users []*user_pkg.UserInfo) {
 	policeChatIDs := make([]int64, 0)
 	nonPoliceUsers := make([]string, 0)
+	nonPoliceChatIDs := make([]int64, 0)
 	for _, user := range users {
 		if user.Role == user_pkg.ROLE_POLICE {
 			policeChatIDs = append(policeChatIDs, user.ChatID)
 		} else {
 			nonPoliceUsers = append(nonPoliceUsers, user.UserId)
+			nonPoliceChatIDs = append(nonPoliceChatIDs, user.ChatID)
 		}
 	}
 
 	telegram.GetTelegramBotClient().
-		BroadcastMsgToUsers(policeChatIDs, BuildVotationList(nonPoliceUsers, "ask role"))
+		BroadcastMsgToUsers(nonPoliceChatIDs, BuildVotationList(nonPoliceUsers, "It's time for the police to make their move now"))
+	telegram.GetTelegramBotClient().
+		BroadcastMsgToUsers(policeChatIDs, BuildVotationList(nonPoliceUsers, "Ask a user's role"))
 }

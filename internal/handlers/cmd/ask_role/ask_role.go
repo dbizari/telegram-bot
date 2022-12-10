@@ -34,7 +34,7 @@ func (arh *AskRoleHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload
 		return REPLY_ASK_ROLE_INEXISTENT_SESSION, nil
 	}
 
-	if !session.CanUserAskForRole(payload.UserName, payload.Args[0]) {
+	if !session.CanUserAskForRole(payload.UserName) {
 		return REPLY_ASK_ROLE_USER_CANT_KNOW_ROLE, nil
 	}
 

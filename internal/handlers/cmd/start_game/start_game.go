@@ -48,9 +48,9 @@ func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayloa
 		return "", err
 	}
 
-	session.InformRoles()
-
 	session.StartStage()
+
+	session.InformRoles()
 
 	return REPLY_START_GAME, nil
 }

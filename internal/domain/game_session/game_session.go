@@ -181,7 +181,7 @@ func (gs GameSession) GetRole(userId string) string {
 	return role
 }
 
-func (gs GameSession) CanUserAskForRole(userId string, userToAsk string) bool {
+func (gs GameSession) CanUserAskForRole(userId string) bool {
 	userRole := gs.GetRole(userId)
 
 	if userRole == "" {

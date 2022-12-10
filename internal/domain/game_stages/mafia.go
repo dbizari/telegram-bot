@@ -23,7 +23,7 @@ func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
 	votedUser := getMostVotedUser(users)
 	votedUser.Alive = false
 
-	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "you were killed by the mafia...", 0)
+	telegram.GetTelegramBotClient().SendMsg(votedUser.ChatID, "You were killed by the mafia...", 0)
 
 	chatIDs := make([]int64, 0)
 	for _, u := range users {
@@ -71,6 +71,7 @@ func (m Mafia) GetStageName() string {
 func (m Mafia) Start(users []*user_pkg.UserInfo) {
 	mafiaChatIDs := make([]int64, 0)
 	nonMafiaUsers := make([]string, 0)
+	nonMafiaChatIDs := make([]int64, 0)
 	for _, user := range users {
 		if !user.Alive {
 			continue
@@ -80,8 +81,12 @@ func (m Mafia) Start(users []*user_pkg.UserInfo) {
 			mafiaChatIDs = append(mafiaChatIDs, user.ChatID)
 		} else {
 			nonMafiaUsers = append(nonMafiaUsers, user.UserId)
+			nonMafiaChatIDs = append(nonMafiaChatIDs, user.ChatID)
 		}
 	}
+
+	telegram.GetTelegramBotClient().
+		BroadcastMsgToUsers(nonMafiaChatIDs, "The mafia is up to something...")
 
 	telegram.GetTelegramBotClient().
 		BroadcastMsgToUsers(mafiaChatIDs, BuildVotationList(nonMafiaUsers, "kill"))
