@@ -28,7 +28,7 @@ func (vh *VoteHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (s
 		return REPLY_VOTE_MISSING_USERNAME, nil
 	}
 
-	session, err := vh.GameSessionRepository.GetByMember(ctx, payload.UserName)
+	session, err := vh.GameSessionRepository.GetNotFinishedGameByMember(ctx, payload.UserName)
 	if err != nil {
 		return "", err
 	}
@@ -44,6 +44,8 @@ func (vh *VoteHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (s
 	if !ok {
 		return fmt.Sprintf(REPLY_VOTE_USER_NOT_FOUND, payload.Args[0]), nil
 	}
+
+	session.ApplyStageAction()
 
 	err = vh.GameSessionRepository.Update(ctx, session)
 	if err != nil {

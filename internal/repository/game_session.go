@@ -9,7 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"sync"
-	"tdl/internal/domain"
+	"tdl/internal/domain/game_session"
+	"tdl/internal/domain/game_stages"
 	"time"
 )
 
@@ -19,12 +20,12 @@ var (
 )
 
 type GameSessionRepositoryAPI interface {
-	CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error)
+	CreateGame(ctx context.Context, gameSession *game_session.GameSession) (string, error)
 	ExitGame(ctx context.Context, userName string) (bool, error)
-	Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error)
-	GetByMember(ctx context.Context, username string) (*domain.GameSession, error)
-	GetNotFinishedGameByMember(ctx context.Context, userID string) (*domain.GameSession, error)
-	Update(ctx context.Context, gameSession *domain.GameSession) error
+	Get(ctx context.Context, gameSessionID string) (*game_session.GameSession, error)
+	GetByMember(ctx context.Context, username string) (*game_session.GameSession, error)
+	GetNotFinishedGameByMember(ctx context.Context, userID string) (*game_session.GameSession, error)
+	Update(ctx context.Context, gameSession *game_session.GameSession) error
 }
 
 type gameSessionRepository struct {
@@ -50,7 +51,7 @@ func GetGameSessionRepositoryClient() GameSessionRepositoryAPI {
 	})
 	return client
 }
-func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *domain.GameSession) (string, error) {
+func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *game_session.GameSession) (string, error) {
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -63,7 +64,7 @@ func (gsr gameSessionRepository) CreateGame(ctx context.Context, gameSession *do
 	return id.Hex(), nil
 }
 
-func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) (*domain.GameSession, error) {
+func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) (*game_session.GameSession, error) {
 	id, err := primitive.ObjectIDFromHex(gameSessionID)
 	if err != nil {
 		return nil, errors.Wrap(err, "error trying to convert gameSessionID to ObjectID")
@@ -73,7 +74,7 @@ func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	var session domain.GameSession
+	var session game_session.GameSession
 	filter := bson.D{{"_id", id}}
 	err = collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
@@ -87,12 +88,12 @@ func (gsr gameSessionRepository) Get(ctx context.Context, gameSessionID string) 
 	return &session, nil
 }
 
-func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string) (*game_session.GameSession, error) {
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	var session domain.GameSession
+	var session game_session.GameSession
 	filter := bson.D{
 		{"users", bson.D{
 			{"$elemMatch", bson.D{
@@ -113,7 +114,7 @@ func (gsr gameSessionRepository) GetByMember(ctx context.Context, userID string)
 	return &session, nil
 }
 
-func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *domain.GameSession) error {
+func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *game_session.GameSession) error {
 
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -132,15 +133,15 @@ func (gsr gameSessionRepository) Update(ctx context.Context, gameSession *domain
 	return nil
 }
 
-func (gsr gameSessionRepository) GetNotFinishedGameByMember(ctx context.Context, userID string) (*domain.GameSession, error) {
+func (gsr gameSessionRepository) GetNotFinishedGameByMember(ctx context.Context, userID string) (*game_session.GameSession, error) {
 	collection := gsr.Database("mafia").Collection("game_session")
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	// Check if already player is in a game
-	session := &domain.GameSession{}
+	session := &game_session.GameSession{}
 	filter := bson.D{
-		{"status", bson.D{{"$ne", domain.STAGE_FINISHIED}}},
+		{"status", bson.D{{"$ne", game_stages.STAGE_FINISHIED}}},
 		{"users", bson.D{{"$elemMatch", bson.D{{
 			"user_id",
 			userID}}}}}}
@@ -161,7 +162,7 @@ func (gsr gameSessionRepository) ExitGame(ctx context.Context, userName string) 
 	filter := bson.D{{"users", bson.D{{"$elemMatch", bson.D{{
 		"user_id",
 		userName}}}}}}
-	var session domain.GameSession
+	var session game_session.GameSession
 	err := collection.FindOne(ctx, filter).Decode(&session)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

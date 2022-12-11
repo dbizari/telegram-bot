@@ -1,4 +1,4 @@
-package start_game
+package ask_role
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-func TestStartGameHandler_HandleCmd(t *testing.T) {
+func TestAskRoleHandler_HandleCmd(t *testing.T) {
 	tests := []struct {
 		name              string
 		fnMockRepository  func(repository *mock_repository.MockGameSessionRepositoryAPI)
@@ -24,126 +24,76 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name: "Happy path",
-			args: cmd.CmdPayload{
-				UserName: "mili",
-			},
-			want:    "",
-			wantErr: false,
+			name: "Happy path with police",
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
 				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
-					OwnerId: "mili",
+					OwnerId: "danybiz",
 					Users: []*user_pkg.UserInfo{
 						{
-							UserId: "mili",
-							ChatID: 1,
-						},
-						{
 							UserId: "danybiz",
-							ChatID: 2,
+							Role:   user_pkg.ROLE_POLICE,
 						},
 						{
-							UserId: "tfanciotti",
-							ChatID: 3,
+							UserId: "tomi",
+							Role:   user_pkg.ROLE_MAFIA,
 						},
 					},
-					Stage: game_stages.Pending{},
+					Stage: game_stages.Police{},
 				}
-				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
+				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
-
-				repository.EXPECT().Update(gomock.Any(), gomock.Any()).Times(1).
-					Return(nil)
+				repository.EXPECT().Update(gomock.Any(), gomock.Any()).Times(1)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {
 				mock.EXPECT().BroadcastMsgToUsers(gomock.Any(), gomock.Any()).Times(2)
-				mock.EXPECT().SendMsg(gomock.Any(), gomock.Any(), gomock.Any()).Times(3)
 			},
+			args: cmd.CmdPayload{
+				UserName: "danybiz",
+				Args:     []string{"tomi"},
+			},
+			want:    user_pkg.ROLE_MAFIA,
+			wantErr: false,
 		},
 		{
-			name: "User is not the owner",
+			name: "Missing username",
+			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
+			},
+			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
 			args: cmd.CmdPayload{
 				UserName: "danybiz",
 			},
-			want:    REPLY_START_GAME_USER_IS_NOT_OWNER,
+			want:    REPLY_ASK_ROLE_MISSING_USERNAME,
 			wantErr: false,
+		},
+		{
+			name: "Citizen can't ask for another user's role",
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
 				session := game_session.GameSession{
 					ID:      primitive.ObjectID{},
-					OwnerId: "mili",
+					OwnerId: "danybiz",
 					Users: []*user_pkg.UserInfo{
 						{
-							UserId: "mili",
-						},
-						{
 							UserId: "danybiz",
+							Role:   user_pkg.ROLE_CITIZEN,
 						},
 						{
-							UserId: "tfanciotti",
+							UserId: "tomi",
+							Role:   user_pkg.ROLE_MAFIA,
 						},
 					},
-					Stage: game_stages.Mafia{},
+					Stage: game_stages.Discussion{},
 				}
 				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "danybiz").Times(1).
 					Return(&session, nil)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
-		},
-		{
-			name: "Game already started",
 			args: cmd.CmdPayload{
-				UserName: "mili",
+				UserName: "danybiz",
+				Args:     []string{"tomi"},
 			},
-			want:    REPLY_START_GAME_ALREADY_STARTED,
+			want:    REPLY_ASK_ROLE_USER_CANT_KNOW_ROLE,
 			wantErr: false,
-			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := game_session.GameSession{
-					ID:      primitive.ObjectID{},
-					OwnerId: "mili",
-					Users: []*user_pkg.UserInfo{
-						{
-							UserId: "mili",
-						},
-						{
-							UserId: "danybiz",
-						},
-						{
-							UserId: "tfanciotti",
-						},
-					},
-					Stage: game_stages.Mafia{},
-				}
-				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
-					Return(&session, nil)
-			},
-			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
-		},
-		{
-			name: "Not enough players",
-			args: cmd.CmdPayload{
-				UserName: "mili",
-			},
-			want:    REPLY_START_GAME_NOT_ENOUGH_PLAYERS,
-			wantErr: false,
-			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
-				session := game_session.GameSession{
-					ID:      primitive.ObjectID{},
-					OwnerId: "mili",
-					Users: []*user_pkg.UserInfo{
-						{
-							UserId: "mili",
-						},
-						{
-							UserId: "danybiz",
-						},
-					},
-					Stage: game_stages.Pending{},
-				}
-				repository.EXPECT().GetNotFinishedGameByMember(gomock.Any(), "mili").Times(1).
-					Return(&session, nil)
-			},
-			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {},
 		},
 	}
 	for _, tt := range tests {
@@ -158,13 +108,13 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			tt.fnMockTelegramBot(tbMock)
 			telegram.SetMockTelegramBot(tbMock)
 
-			handler := StartGameHandler{
+			handler := AskRoleHandler{
 				GameSessionRepository: repositoryMock,
 			}
-
 			got, err := handler.HandleCmd(context.Background(), tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleCmd() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 			if got != tt.want {
 				t.Errorf("HandleCmd() got = %v, want %v", got, tt.want)

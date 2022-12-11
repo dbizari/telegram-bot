@@ -9,7 +9,6 @@ import (
 const (
 	CMD_START_GAME = "/startGame"
 
-	REPLY_START_GAME                    = "Let the game begin!"
 	REPLY_START_GAME_INEXISTENT_SESSION = "Oops it seems that you are not in any game"
 	REPLY_START_GAME_USER_IS_NOT_OWNER  = "Only the owner can start the game"
 	REPLY_START_GAME_ALREADY_STARTED    = "The game is already on"
@@ -21,7 +20,7 @@ type StartGameHandler struct {
 }
 
 func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayload) (string, error) {
-	session, err := sgh.GameSessionRepository.GetByMember(ctx, payload.UserName)
+	session, err := sgh.GameSessionRepository.GetNotFinishedGameByMember(ctx, payload.UserName)
 	if err != nil {
 		return "", err
 	}
@@ -48,5 +47,9 @@ func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayloa
 		return "", err
 	}
 
-	return REPLY_START_GAME, nil
+	session.InformRoles()
+
+	session.StartStage()
+
+	return "", nil
 }

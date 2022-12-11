@@ -11,4 +11,5 @@ type CmdHandler interface {
 type CmdPayload struct {
 	Args     []string
 	UserName string
+	ChatID   int64
 }

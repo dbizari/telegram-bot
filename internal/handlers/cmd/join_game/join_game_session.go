@@ -3,7 +3,7 @@ package join_game
 import (
 	"context"
 	"fmt"
-	"tdl/internal/domain"
+	user_pkg "tdl/internal/domain/user"
 	"tdl/internal/handlers/cmd"
 	"tdl/internal/repository"
 )
@@ -44,8 +44,9 @@ func (jgsh JoinGameSessionHandler) HandleCmd(ctx context.Context, payload cmd.Cm
 		return REPLY_JOIN_INEXISTENT_SESSION, nil
 	}
 
-	newUser := &domain.UserInfo{
+	newUser := &user_pkg.UserInfo{
 		UserId:   payload.UserName,
+		ChatID:   payload.ChatID,
 		Role:     "",
 		Alive:    true,
 		Votes:    0,
