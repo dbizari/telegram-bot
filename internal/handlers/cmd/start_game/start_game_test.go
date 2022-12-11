@@ -57,7 +57,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 					Return(nil)
 			},
 			fnMockTelegramBot: func(mock *mock_telegram.MockBotAPI) {
-				mock.EXPECT().BroadcastMsgToUsers(gomock.Any(), gomock.Any()).Times(1)
+				mock.EXPECT().BroadcastMsgToUsers(gomock.Any(), gomock.Any()).Times(2)
 				mock.EXPECT().SendMsg(gomock.Any(), gomock.Any(), gomock.Any()).Times(3)
 			},
 		},
