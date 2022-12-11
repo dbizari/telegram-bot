@@ -40,6 +40,8 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 
 	chatIDs := make([]int64, 0)
 	for _, u := range users {
+		chatIDs = append(chatIDs, u.ChatID)
+
 		if !u.Alive {
 			continue
 		}
@@ -49,8 +51,6 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 		} else {
 			citizenCount++
 		}
-
-		chatIDs = append(chatIDs, u.ChatID)
 	}
 
 	if mafiaCount == 0 {
@@ -63,10 +63,9 @@ func (d Discussion) NextStage(users []*user_pkg.UserInfo) GameStage {
 		return Finished{}
 	}
 
-	// Game must go on
-	newStage := Mafia{}
-	newStage.Start(users)
-	return newStage
+	nextStage := Mafia{}
+	nextStage.Start(users)
+	return Mafia{}
 }
 
 func (d Discussion) CanUserVote(user user_pkg.UserInfo) bool {
@@ -81,6 +80,9 @@ func (d Discussion) Start(users []*user_pkg.UserInfo) {
 	chatIDs := make([]int64, 0)
 	allUsers := make([]string, 0)
 	for _, user := range users {
+		if !user.Alive {
+			continue
+		}
 		chatIDs = append(chatIDs, user.ChatID)
 		allUsers = append(allUsers, user.UserId)
 	}

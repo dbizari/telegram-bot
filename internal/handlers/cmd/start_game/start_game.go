@@ -9,7 +9,6 @@ import (
 const (
 	CMD_START_GAME = "/startGame"
 
-	REPLY_START_GAME                    = "Let the game begin!"
 	REPLY_START_GAME_INEXISTENT_SESSION = "Oops it seems that you are not in any game"
 	REPLY_START_GAME_USER_IS_NOT_OWNER  = "Only the owner can start the game"
 	REPLY_START_GAME_ALREADY_STARTED    = "The game is already on"
@@ -48,9 +47,9 @@ func (sgh StartGameHandler) HandleCmd(ctx context.Context, payload cmd.CmdPayloa
 		return "", err
 	}
 
-	session.StartStage()
-
 	session.InformRoles()
 
-	return REPLY_START_GAME, nil
+	session.StartStage()
+
+	return "", nil
 }

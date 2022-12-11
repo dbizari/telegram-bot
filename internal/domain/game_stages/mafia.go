@@ -37,27 +37,36 @@ func (m Mafia) ApplyAction(users []*user_pkg.UserInfo) {
 
 func (m Mafia) NextStage(users []*user_pkg.UserInfo) GameStage {
 	chatIDs := make([]int64, 0)
-	aliveUsers := make([]string, 0)
 	isAnyPoliceAlive := false
+	var usersAlive int
+
 	for _, u := range users {
-		if u.Role == user_pkg.ROLE_POLICE {
-			chatIDs = append(chatIDs, u.ChatID)
-			if u.Alive {
-				isAnyPoliceAlive = true
-			}
-		} else {
-			if u.Alive {
-				aliveUsers = append(aliveUsers, u.UserId)
-			}
+		chatIDs = append(chatIDs, u.ChatID)
+		if u.Role == user_pkg.ROLE_POLICE && u.Alive {
+			isAnyPoliceAlive = true
+		}
+		if u.Alive {
+			usersAlive++
 		}
 	}
 
-	telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, BuildVotationList(aliveUsers, "ask role"))
+	// 1 mafia and other or 2 mafias
+	if usersAlive == 2 {
+		telegram.GetTelegramBotClient().BroadcastMsgToUsers(chatIDs, "Mafia wins !")
+		return Finished{}
+	}
+
+	var nextStage GameStage
 
 	if isAnyPoliceAlive {
-		return Police{}
+		nextStage = Police{}
+	} else {
+		nextStage = Discussion{}
 	}
-	return Discussion{}
+
+	nextStage.Start(users)
+
+	return nextStage
 }
 
 func (m Mafia) CanUserVote(user user_pkg.UserInfo) bool {

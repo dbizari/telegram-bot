@@ -28,7 +28,7 @@ func TestStartGameHandler_HandleCmd(t *testing.T) {
 			args: cmd.CmdPayload{
 				UserName: "mili",
 			},
-			want:    REPLY_START_GAME,
+			want:    "",
 			wantErr: false,
 			fnMockRepository: func(repository *mock_repository.MockGameSessionRepositoryAPI) {
 				session := game_session.GameSession{
